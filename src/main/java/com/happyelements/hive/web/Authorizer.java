@@ -36,11 +36,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  *
  */
 public class Authorizer {
+	private static final Log LOGGER = LogFactory.getLog(Authorizer.class);
 
 	private static Map<String, Long> AUTH_CACHE = new ConcurrentHashMap<String, Long>() {
 		private static final long serialVersionUID = -5887028771861026254L;
@@ -91,7 +95,7 @@ public class Authorizer {
 					authrized = true;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				Authorizer.LOGGER.error("fail to auth user with authorization:" + auth, e);
 				authrized = false;
 			} finally {
 				if (connection != null) {

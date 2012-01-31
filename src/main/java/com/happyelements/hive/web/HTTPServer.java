@@ -26,24 +26,14 @@
  */
 package com.happyelements.hive.web;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.parse.ASTNode;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.HiveParser.body_return;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.mortbay.jetty.HttpConnection;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
@@ -57,6 +47,7 @@ import com.happyelements.hive.web.api.SubmitQuery;
  *
  */
 public class HTTPServer extends Server {
+	private static final Log LOGGER = LogFactory.getLog(HTTPServer.class);
 
 	private ConcurrentHashMap<String, HTTPHandler> rest = new ConcurrentHashMap<String, HTTPServer.HTTPHandler>();
 
@@ -81,8 +72,10 @@ public class HTTPServer extends Server {
 		public void handle(String target, HttpServletRequest request,
 				HttpServletResponse response, int dispatch) throws IOException,
 				ServletException {
-			if (path.equals(target)) {
-				if (need_auth) {
+			// check path
+			if (this.path.equals(target)) {
+				// do auth if needed
+				if (this.need_auth) {
 					if (Authorizer.auth(request)) {
 						this.handle(request, response);
 					}
@@ -90,6 +83,8 @@ public class HTTPServer extends Server {
 					this.handle(request, response);
 				}
 			}
+
+			// flag it as finished
 			Request.getRequest(request).setHandled(true);
 		}
 
@@ -98,33 +93,52 @@ public class HTTPServer extends Server {
 				ServletException;
 	}
 
+	/**
+	 * constructor a http server using nio connector
+	 * @param port
+	 */
 	public HTTPServer(int port) {
 		super(port);
+
+		// use nio connector
 		SelectChannelConnector connector = new SelectChannelConnector();
 		connector.setDelaySelectKeyUpdate(false);
 		connector.setUseDirectBuffers(false);
 		this.addConnector(new SelectChannelConnector());
 		this.setThreadPool(new QueuedThreadPool());
 
+		// add main handler(REST style)
 		this.addHandler(new AbstractHandler() {
 			@Override
 			public void handle(String target, HttpServletRequest request,
 					HttpServletResponse response, int dispatch)
 					throws IOException, ServletException {
-				System.out.println("reqeust :" + target);
-				HTTPHandler handler = rest.get(target);
+				// access log
+				HTTPServer.LOGGER.info("access path:" + target
+						+ request.getHeaderNames());
+
+				// find handler
+				HTTPHandler handler = HTTPServer.this.rest.get(target);
 				if (handler != null) {
-					System.out.println("not null");
 					handler.handle(target, request, response, dispatch);
 				} else {
-					System.out.println(HttpConnection.getCurrentConnection()
-							.getConnector());
+					HTTPServer.LOGGER
+							.warn("find no handler for path:" + target);
 				}
+
+				// flag it as finished
 				Request.getRequest(request).setHandled(true);
 			}
 		});
 	}
 
+	/**
+	 * add rest handler
+	 * @param handler
+	 * 		the handler
+	 * @return
+	 * 		the server that contains the handler
+	 */
 	public HTTPServer add(HTTPHandler handler) {
 		if (handler != null) {
 			this.rest.put(handler.path, handler);
@@ -135,7 +149,7 @@ public class HTTPServer extends Server {
 	public static void main(String[] args) {
 		try {
 			new HTTPServer(9999)//
-					.add(new SubmitQuery()).add(null)//
+					.add(new SubmitQuery("/")).add(null)//
 					.start();
 		} catch (Exception e) {
 			e.printStackTrace();

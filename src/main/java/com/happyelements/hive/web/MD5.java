@@ -33,7 +33,6 @@ import java.security.NoSuchAlgorithmException;
  * md5 digest
  * 
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
- * 
  */
 public class MD5 {
 	private static final char[] MAP = { '0', '1', '2', '3', '4', '5', '6', '7',
