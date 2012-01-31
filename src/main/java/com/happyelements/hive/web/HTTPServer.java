@@ -146,6 +146,7 @@ public class HTTPServer extends Server {
 				return null;
 			}
 			File old = super.get(key);
+			LOGGER.info(new File(static_root, key.toString()));
 			if (old == null
 					|| !(old = new File(static_root, key.toString())).exists()) {
 				old = null;
@@ -203,7 +204,6 @@ public class HTTPServer extends Server {
 					// try find a static file
 					File file = cache.get(target);
 
-					LOGGER.info("file path:" + file);
 					if (file != null) {
 						// client used if modifyed since,so check modify time
 						if (modify != -1
