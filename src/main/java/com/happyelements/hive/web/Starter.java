@@ -52,8 +52,8 @@ public class Starter {
 		logger.removeAllAppenders();
 		if (log != null) {
 			RollingFileAppender appender = new RollingFileAppender(
-					new PatternLayout("%d [%t] %-5p %c [%x] - %m%n"), log);
-			appender.setFile(new File(log, "log.log").getPath());
+					new PatternLayout("%d [%t] %-5p %c [%x] - %m%n"), new File(
+							log, "log.log").getPath());
 			appender.setImmediateFlush(false);
 			appender.setMaxBackupIndex(10);
 			appender.setMaxFileSize("100MB");
