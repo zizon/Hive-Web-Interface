@@ -37,6 +37,11 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 
+import com.happyelements.hive.web.api.GetQueryResult;
+import com.happyelements.hive.web.api.GetUserQuerys;
+import com.happyelements.hive.web.api.Kill;
+import com.happyelements.hive.web.api.SubmitQuery;
+
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  *
@@ -86,7 +91,11 @@ public class Starter {
 			LOGGER.info("initialize log system done");
 			LOGGER.info("starting http server at port:" + args[2]
 					+ " staticfiles:" + args[2] + " log_root:" + args[0]);
-			new HTTPServer(args[0], Integer.parseInt(args[2], 10)).start();
+			new HTTPServer(args[0], Integer.parseInt(args[2], 10)) //
+					.add(new SubmitQuery("/hwi/submitQuery.jsp", args[1])) //
+					.add(new GetQueryResult("/hwi/getQueryResult", args[1])) //
+					.add(new GetUserQuerys("/hwi/getUserQuerys.jsp")) //
+					.add(new Kill("/hwi/kill.jsp")).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
