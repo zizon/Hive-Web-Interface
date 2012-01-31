@@ -67,7 +67,7 @@ public class Starter {
 	public static void checkAndCreate(String path) throws IOException {
 		File file = new File(path);
 		if (file.exists()) {
-			if (file.isDirectory()) {
+			if (!file.isDirectory()) {
 				throw new IOException(path + " is not directory");
 			}
 		} else if (!file.mkdirs()) {
