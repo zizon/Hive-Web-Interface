@@ -26,7 +26,6 @@
  */
 package com.happyelements.hive.web.api;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,34 +59,22 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobPriority;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import com.happyelements.hive.web.Base64;
+import com.happyelements.hive.web.Authorizer;
 import com.happyelements.hive.web.CentralThreadPool;
 import com.happyelements.hive.web.MD5;
-import com.happyelements.hive.web.HTTPServer.HTTPHandler;
 
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
- *
  */
-public class SubmitQuery extends HTTPHandler {
+public class SubmitQuery extends ResultFileHandler {
 
 	private static final Log LOGGER = LogFactory.getLog(SubmitQuery.class);
-
-	private File result_dictionary;
 
 	/**
 	 * @param path
 	 */
-	public SubmitQuery(String path) throws IOException {
-		super(false, "/hwi/submitQuery.jsp");
-		result_dictionary = new File(path);
-		if (result_dictionary.exists()) {
-			if (!result_dictionary.isDirectory()) {
-				throw new IOException("path:" + path + " is not ad directory");
-			}
-		} else if (!result_dictionary.mkdirs()) {
-			throw new IOException("fail to create directory:" + path);
-		}
+	public SubmitQuery(String url, String path) throws IOException {
+		super(true, url, path);
 	}
 
 	/**
@@ -96,16 +83,24 @@ public class SubmitQuery extends HTTPHandler {
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
+		// set up standard responses header
+		response.setCharacterEncoding("utf8");
+		response.setContentType("application/json");
+
 		// check method
 		if (!"POST".equals(request.getMethod())) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
 					"do not supoort http method except for POST");
 			return;
 		}
 
 		// check user
-		String user = new String(Base64.decode(request
-				.getHeader("Authorization").replace("Basic", "").trim()));
+		String user = Authorizer.extractUser(request);
+		if (user == null) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+					"find no user name");
+			return;
+		}
 
 		// check query
 		String query = null;
@@ -121,13 +116,13 @@ public class SubmitQuery extends HTTPHandler {
 		}
 
 		// submit querys
-		String id = MD5
-				.digestLiteral(user + query + System.currentTimeMillis());
+		String query_id = MD5.digestLiteral(user + query
+				+ System.currentTimeMillis());
 		// set up hive
 		final HiveConf conf = new HiveConf(HiveConf.class);
 		conf.set("hadoop.job.ugi", user + ",hive");
 		conf.set("he.user.name", user);
-		conf.set("rest.query.id", id);
+		conf.set("rest.query.id", query_id);
 
 		SessionState.start(new SessionState(conf));
 		try {
@@ -142,7 +137,7 @@ public class SubmitQuery extends HTTPHandler {
 			response.setHeader("Content-Type", "application/json");
 			response.getWriter().append(
 					new StringBuilder("{\"id\":\""
-							+ id
+							+ query_id
 							+ "\",\"message\":\""
 							+ (e.getMessage() != null ? e.getMessage()
 									.replace("\"", "'").replace("\n", "") : "")
@@ -154,26 +149,28 @@ public class SubmitQuery extends HTTPHandler {
 		SubmitQuery.LOGGER.info("user:" + user + " submit query:" + query);
 
 		// async submit
-		this.asyncSubmitQuery(user, id, query, conf);
+		this.asyncSubmitQuery(user, query_id, query, conf);
 
 		// send response
 		response.setStatus(HttpServletResponse.SC_OK);
+		response.setCharacterEncoding("utf8");
+		response.setContentType("application/json");
 		response.getWriter().append(
-				"{\"id\":\"" + id + "\",\"message\":\"query submit\"}");
+				"{\"id\":\"" + query_id + "\",\"message\":\"query submit\"}");
 	}
 
 	/**
 	 * async submit a query
 	 * @param user
 	 * 		the submit user
-	 * @param id
+	 * @param query_id
 	 * 		the query id
 	 * @param query
 	 * 		the query
 	 * @param conf
 	 * 		the hive conf
 	 */
-	protected void asyncSubmitQuery(final String user, final String id,
+	protected void asyncSubmitQuery(final String user, final String query_id,
 			final String query, final HiveConf conf) {
 		CentralThreadPool.getPool().submit(new Runnable() {
 			@Override
@@ -216,9 +213,8 @@ public class SubmitQuery extends HTTPHandler {
 												.getSerializationNullFormat());
 							}
 							serde.initialize(job, serdeProp);
-							file = new FileOutputStream(new File(
-									result_dictionary, user + "." + id
-											+ ".result"));
+							file = new FileOutputStream(makeResultFile(user,
+									query_id));
 							InspectableObject io = operator.getNextRow();
 							while (io != null) {
 								file.write((((Text) serde

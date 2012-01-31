@@ -95,7 +95,8 @@ public class Authorizer {
 					authrized = true;
 				}
 			} catch (Exception e) {
-				Authorizer.LOGGER.error("fail to auth user with authorization:" + auth, e);
+				Authorizer.LOGGER.error("fail to auth user with authorization:"
+						+ auth, e);
 				authrized = false;
 			} finally {
 				if (connection != null) {
@@ -105,5 +106,24 @@ public class Authorizer {
 
 			return authrized;
 		}
+	}
+
+	public static String extractUser(HttpServletRequest request) {
+		if (request == null) {
+			return null;
+		}
+
+		String user = null;
+		try {
+			user = new String(Base64.decode(request.getHeader("Authorization")
+					.substring(5))).split(":")[0];
+		} catch (Exception e) {
+			LOGGER.error(
+					"fail to extract user for Authorization:"
+							+ request.getHeader("Authorization"), e);
+			user = null;
+		}
+
+		return user;
 	}
 }
