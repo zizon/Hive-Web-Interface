@@ -54,7 +54,6 @@ import org.mortbay.util.IO;
 public class HTTPServer extends Server {
 	private static final Log LOGGER = LogFactory.getLog(HTTPServer.class);
 
-
 	/**
 	 * handler that handle http request
 	 * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
@@ -188,8 +187,7 @@ public class HTTPServer extends Server {
 					HttpServletResponse response, int dispatch)
 					throws IOException, ServletException {
 				// access log
-				HTTPServer.LOGGER.info("access path:" + target
-						+ request.getHeaderNames());
+				HTTPServer.LOGGER.info("access path:" + target);
 
 				// find handler
 				HTTPHandler handler = HTTPServer.this.rest.get(target);
@@ -205,6 +203,7 @@ public class HTTPServer extends Server {
 					// try find a static file
 					File file = cache.get(target);
 
+					LOGGER.info("file path:" + file);
 					if (file != null) {
 						// client used if modifyed since,so check modify time
 						if (modify != -1
