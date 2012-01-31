@@ -146,9 +146,8 @@ public class HTTPServer extends Server {
 				return null;
 			}
 			File old = super.get(key);
-			LOGGER.info(new File(static_root, key.toString()));
 			if (old == null
-					|| !(old = new File(static_root, key.toString())).exists()) {
+					&& !(old = new File(static_root, key.toString())).exists()) {
 				old = null;
 			}
 			return old;
