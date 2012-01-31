@@ -51,9 +51,9 @@ public class Starter {
 	private static final Log LOGGER = LogFactory.getLog(Starter.class);
 
 	public static void initializeLogSystem(String log) throws IOException {
-		checkAndCreate(log);
+		Starter.checkAndCreate(log);
 		Logger logger = Logger.getRootLogger();
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.DEBUG);
 		logger.removeAllAppenders();
 		if (log != null) {
 			RollingFileAppender appender = new RollingFileAppender(
@@ -87,9 +87,9 @@ public class Starter {
 				return;
 			}
 
-			initializeLogSystem(args[1]);
-			LOGGER.info("initialize log system done");
-			LOGGER.info("starting http server at port:" + args[2]
+			Starter.initializeLogSystem(args[1]);
+			Starter.LOGGER.info("initialize log system done");
+			Starter.LOGGER.info("starting http server at port:" + args[2]
 					+ " staticfiles:" + args[2] + " log_root:" + args[0]);
 			new HTTPServer(args[0], Integer.parseInt(args[2], 10)) //
 					.add(new SubmitQuery("/hwi/submitQuery.jsp", args[1])) //

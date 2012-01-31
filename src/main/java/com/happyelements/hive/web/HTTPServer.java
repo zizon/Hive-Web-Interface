@@ -141,13 +141,18 @@ public class HTTPServer extends Server {
 			}, 0, 3600000);
 		}
 
+		@Override
 		public File get(Object key) {
 			if (key == null) {
 				return null;
 			}
 			File old = super.get(key);
+			HTTPServer.LOGGER.debug(" try get file from cache:"
+					+ new File(HTTPServer.this.static_root, key.toString())
+							.getPath());
 			if (old == null
-					&& !(old = new File(static_root, key.toString())).exists()) {
+					&& !(old = new File(HTTPServer.this.static_root,
+							key.toString())).exists()) {
 				old = null;
 			}
 			return old;
@@ -192,6 +197,7 @@ public class HTTPServer extends Server {
 				// find handler
 				HTTPHandler handler = HTTPServer.this.rest.get(target);
 				if (handler != null) {
+					HTTPServer.LOGGER.debug("get handle:" + target);
 					handler.handle(target, request, response, dispatch);
 				} else if (!"GET".equals(request.getMethod())) {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST,
@@ -201,14 +207,19 @@ public class HTTPServer extends Server {
 					long modify = request.getDateHeader("If-Modified-Since");
 
 					// try find a static file
-					File file = cache.get(target);
+					File file = HTTPServer.this.cache.get(target);
 
 					if (file != null) {
+						HTTPServer.LOGGER.debug("get file:" + target);
 						// client used if modifyed since,so check modify time
 						if (modify != -1
 								&& file.lastModified() / 1000 > modify / 1000) {
+							HTTPServer.LOGGER.debug("get file:" + target
+									+ " not modify");
 							response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 						} else {
+							HTTPServer.LOGGER.debug("get file:" + target
+									+ " modified");
 							// modified
 							response.setStatus(HttpServletResponse.SC_OK);
 							IO.copy(new FileInputStream(file),
@@ -216,6 +227,8 @@ public class HTTPServer extends Server {
 						}
 					} else {
 						// no content found
+						HTTPServer.LOGGER.debug("find no file:" + target
+								+ " not modify");
 						response.sendError(HttpServletResponse.SC_NOT_FOUND);
 					}
 				}
