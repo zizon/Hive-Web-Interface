@@ -82,11 +82,11 @@ public class Starter {
 				return;
 			}
 
-			initializeLogSystem(args[0]);
+			initializeLogSystem(args[1]);
 			LOGGER.info("initialize log system done");
 			LOGGER.info("starting http server at port:" + args[2]
 					+ " staticfiles:" + args[2] + " log_root:" + args[0]);
-			new HTTPServer(args[1], Integer.parseInt(args[2], 10)).start();
+			new HTTPServer(args[0], Integer.parseInt(args[2], 10)).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
