@@ -27,8 +27,6 @@
 package com.happyelements.hive.web;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
@@ -104,8 +102,8 @@ public class HadoopClient {
 								.get(status.getUsername());
 						if (user_infos == null) {
 							user_infos = new ConcurrentSkipListMap<String, QueryInfo>();
-							HadoopClient.USER_JOB_CACHE
-									.put(status.getUsername(), user_infos);
+							HadoopClient.USER_JOB_CACHE.put(
+									status.getUsername(), user_infos);
 						}
 
 						// update info
@@ -129,7 +127,7 @@ public class HadoopClient {
 							info.status = status;
 						}
 					}
-					
+
 					// reset flag
 					HadoopClient.refresh_request_count = 0;
 				} catch (IOException e) {
@@ -171,21 +169,6 @@ public class HadoopClient {
 	}
 
 	/**
-	 * get all job infos
-	 * @return
-	 * 		all jobs
-	 * @throws IOException
-	 * 		unexpected exception when doing RPC
-	 */
-	public static JobStatus[] getAllJobs() throws IOException {
-		return HadoopClient.CLIENT.getAllJobs();
-	}
-
-	public static List<JobStatus> jobsToComplete() throws IOException {
-		return Arrays.asList(HadoopClient.CLIENT.jobsToComplete());
-	}
-
-	/**
 	 * find query info by either job id or query id
 	 * @param id
 	 * 		either job id or query id
@@ -193,6 +176,8 @@ public class HadoopClient {
 	 * 		the query info
 	 */
 	public static QueryInfo getQueryInfo(String id) {
+		// trigger refresh
+		refresh_request_count++;
 		QueryInfo info = null;
 		for (Entry<String, Map<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
 				.entrySet()) {
@@ -209,6 +194,8 @@ public class HadoopClient {
 	}
 
 	public static Map<String, QueryInfo> getUserQuerys(String user) {
+		// trigger refresh
+		refresh_request_count++;
 		return HadoopClient.USER_JOB_CACHE.get(user);
 	}
 }

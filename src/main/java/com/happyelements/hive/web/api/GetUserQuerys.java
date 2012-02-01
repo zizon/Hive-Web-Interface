@@ -42,7 +42,6 @@ import com.happyelements.hive.web.HadoopClient.QueryInfo;
 
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
- *
  */
 public class GetUserQuerys extends HTTPHandler {
 
