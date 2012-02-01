@@ -81,7 +81,7 @@ public class Starter {
 
 	public static void main(String[] args) {
 		try {
-			if (args.length != 3) {
+			if (args.length != 4) {
 				System.out
 						.println("Usage ${hadoop} jar ${jar} ${static_root} ${log_root} ${port} ${default_url}");
 				return;
@@ -90,10 +90,11 @@ public class Starter {
 			Starter.initializeLogSystem(args[1]);
 			Starter.LOGGER.info("initialize log system done");
 			Starter.LOGGER.info("starting http server at port:" + args[2]
-					+ " staticfiles:" + args[2] + " log_root:" + args[0]);
+					+ " staticfiles:" + args[2] + " log_root:" + args[0]
+					+ " defualturl:" + args[3]);
 
 			// construct and start server
-			new HTTPServer(args[0], Integer.parseInt(args[2], 10), "/main.html") //
+			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3]) //
 					.add(new SubmitQuery("/hwi/submitQuery.jsp", args[1])) //
 					.add(new GetQueryResult("/hwi/getQueryResult", args[1])) //
 					.add(new GetUserQuerys("/hwi/getUserQuerys.jsp")) //
