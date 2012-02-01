@@ -31,6 +31,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.JobStatus;
 
 import com.happyelements.hive.web.Authorizer;
@@ -43,6 +45,7 @@ import com.happyelements.hive.web.HadoopClient.QueryInfo;
  *
  */
 public class GetUserQuerys extends HTTPHandler {
+	private static final Log LOGGER = LogFactory.getLog(GetUserQuerys.class);
 
 	/**
 	 * {@inheritDoc}}
@@ -57,6 +60,7 @@ public class GetUserQuerys extends HTTPHandler {
 	@Override
 	protected void handle(HttpServletRequest request,
 			HttpServletResponse response) throws IOException, ServletException {
+		LOGGER.debug(" match:" + this.getClass().getName());
 		// check method
 		if (!"GET".equals(request.getMethod())) {
 			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -127,6 +131,7 @@ public class GetUserQuerys extends HTTPHandler {
 			builder.deleteCharAt(builder.length() - 1);
 		}
 
+		LOGGER.debug("finished:" + this.getClass().getName() + " responsed:" + builder + "]}");
 		response.getWriter().print(builder.append("]}").toString());
 		return;
 	}
