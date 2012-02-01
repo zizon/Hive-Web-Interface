@@ -29,7 +29,6 @@ package com.happyelements.hive.web;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -83,18 +82,18 @@ public class HadoopClient {
 		new Timer().schedule(new TimerTask() {
 			@Override
 			public void run() {
-				now = System.currentTimeMillis();
-				for (Entry<String, QueryInfo> entry : CACHE.entrySet()) {
+				HadoopClient.now = System.currentTimeMillis();
+				for (Entry<String, QueryInfo> entry : HadoopClient.CACHE.entrySet()) {
 					QueryInfo info = entry.getValue();
-					if (info == null || now - info.access >= 3600000) {
-						CACHE.remove(entry.getKey());
+					if (info == null || HadoopClient.now - info.access >= 3600000) {
+						HadoopClient.CACHE.remove(entry.getKey());
 					}
 				}
 			}
 		}, 0, 60000);
 	}
 
-	private static final Map<String, QueryInfo> CACHE = new ConcurrentHashMap<String, QueryInfo>() {
+	private static final ConcurrentHashMap<String, QueryInfo> CACHE = new ConcurrentHashMap<String, QueryInfo>() {
 		private static final long serialVersionUID = -5844685816187712065L;
 
 		@Override
@@ -112,18 +111,40 @@ public class HadoopClient {
 		public QueryInfo get(Object key) {
 			QueryInfo info = super.get(key);
 			if (info == null) {
+				JobID job_id = null;
 				try {
-					String job_id = key.toString();
-					JobConf conf = new JobConf(
-							JobTracker.getLocalJobFilePath(JobID
-									.forName(job_id)));
-					info = new QueryInfo(conf.get("he.user.name"),
-							conf.get("rest.query.id"), conf
-									.get("hive.query.string", "")
-									.replace("\n", " ").replace("\r", " ")
-									.replace("\"", "'"), job_id);
+					job_id = JobID.forName(key.toString());
 				} catch (Exception e) {
-					LOGGER.error("fail to get query info by job id:" + key, e);
+					job_id = null;
+				}
+
+				if (job_id == null) {
+					try {
+						long current = System.currentTimeMillis();
+						for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
+							job_id = status.getJobID();
+							// no cache hit , cache it
+							if (!this.containsKey(job_id)) {
+								JobConf conf = new JobConf(
+										JobTracker.getLocalJobFilePath(job_id));
+								String query = conf.get("hive.query.string");
+								if (query != null) {
+									info = new QueryInfo(
+											conf.get("he.user.name"),
+											conf.get("rest.query.id"), query
+													.replace("\n", " ")
+													.replace("\r", " ")
+													.replace("\"", "'"),
+											job_id.getJtIdentifier());
+									info.access = current;
+									this.put(info.job_id, info);
+								}
+							}
+						}
+					} catch (IOException e) {
+						HadoopClient.LOGGER.error("fail to read job infos", e);
+					}
+					info = super.get(key);
 				}
 			}
 
@@ -158,6 +179,6 @@ public class HadoopClient {
 	}
 
 	public static RunningJob getJob(JobID id) throws IOException {
-		return CLIENT.getJob(id);
+		return HadoopClient.CLIENT.getJob(id);
 	}
 }
