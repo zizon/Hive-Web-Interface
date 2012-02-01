@@ -94,7 +94,6 @@ public class HadoopClient {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				HadoopClient.LOGGER.debug("timer refresh");
 				if (HadoopClient.refresh_request_count <= 0) {
 					return;
 				}
@@ -133,8 +132,6 @@ public class HadoopClient {
 						} else {
 							info.status = status;
 						}
-
-						HadoopClient.LOGGER.debug("refresh info:" + info);
 					}
 
 					// reset flag

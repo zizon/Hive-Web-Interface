@@ -226,9 +226,9 @@ public class HTTPServer extends Server {
 					File file = HTTPServer.this.cache.get(target);
 
 					if (file != null) {
-						// client used if modifyed since,so check modify time
+						// client used if modified since,so check modify time
 						if (modify != -1
-								&& file.lastModified() / 1000 > modify / 1000) {
+								&& file.lastModified() / 1000 <= modify / 1000) {
 							response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 						} else {
 							// modified
