@@ -66,6 +66,10 @@ public class HadoopClient {
 			this.query = query;
 			this.job_id = job_id;
 		}
+		
+		public String toString(){
+			return "user:" + user + " query_id:" + query_id + " job_id:" + job_id + " query:" + query; 
+		}
 	}
 
 	private static int refresh_request_count = 0;
@@ -126,6 +130,8 @@ public class HadoopClient {
 						} else {
 							info.status = status;
 						}
+						
+						LOGGER.debug("refresh info:" + info);
 					}
 
 					// reset flag
