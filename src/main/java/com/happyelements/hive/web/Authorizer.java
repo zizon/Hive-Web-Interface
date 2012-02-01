@@ -115,7 +115,8 @@ public class Authorizer {
 
 		String user = null;
 		try {
-			user = request.getHeader("Authorization").substring(5);
+			/*
+			user = request.getHeader("Authorization").substring(6);
 			// trim tailing CRLF
 			do {
 				switch (user.charAt(user.length() - 1)) {
@@ -126,8 +127,8 @@ public class Authorizer {
 				}
 				break;
 			} while (true);
-
-			user = new String(Base64.decode(user)).split(":")[0];
+			*/
+			user = new String(Base64.decode(request.getHeader("Authorization").substring(6))).split(":")[0];
 		} catch (Exception e) {
 			LOGGER.error(
 					"fail to extract user for Authorization:"
