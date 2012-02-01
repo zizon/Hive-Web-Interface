@@ -72,7 +72,7 @@ public class GetQueryResult extends ResultFileHandler {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
-		
+
 		// check user
 		String user = Authorizer.extractUser(request);
 		if (user == null) {
@@ -95,9 +95,16 @@ public class GetQueryResult extends ResultFileHandler {
 			return;
 		}
 
-		response.setStatus(HttpServletResponse.SC_OK);
-		response.setContentType("application/octet-stream");
-		IO.copy(new BufferedReader(new FileReader(file)), response.getWriter());
+		long modify = request.getDateHeader("If-Modified-Since");
+		if (modify != -1 && file.lastModified() / 1000 <= modify / 1000) {
+			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+		} else {
+			response.setStatus(HttpServletResponse.SC_OK);
+			response.setContentType("application/octet-stream");
+			response.addDateHeader("Last-Modified", file.lastModified());
+			IO.copy(new BufferedReader(new FileReader(file)),
+					response.getWriter());
+		}
 		return;
 	}
 
