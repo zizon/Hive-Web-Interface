@@ -95,12 +95,19 @@ public class HTTPServer extends Server {
 		public void handle(String target, HttpServletRequest request,
 				HttpServletResponse response, int dispatch) throws IOException,
 				ServletException {
+			LOGGER.debug("try handle " + target);
 			// check path
 			if (this.url.equals(target)) {
+				LOGGER.debug("match handler target");
 				// do auth if needed
 				if (this.need_auth) {
+					LOGGER.debug("request need auth");
 					if (Authorizer.auth(request)) {
+						LOGGER.debug("request auth done");
 						this.handle(request, response);
+					}else {
+						LOGGER.debug("request auth fail");
+						response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 					}
 				} else {
 					this.handle(request, response);
