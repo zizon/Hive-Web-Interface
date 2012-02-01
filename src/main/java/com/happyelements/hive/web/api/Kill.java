@@ -70,6 +70,12 @@ public class Kill extends HTTPHandler {
 			return;
 		}
 
+		// check auth
+		if (!auth(request)) {
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			return;
+		}
+		
 		String id = request.getParameter("id");
 		if (id == null || id.isEmpty()) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

@@ -67,6 +67,12 @@ public class GetQueryResult extends ResultFileHandler {
 			return;
 		}
 
+		// check auth
+		if (!auth(request)) {
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			return;
+		}
+		
 		// check user
 		String user = Authorizer.extractUser(request);
 		if (user == null) {

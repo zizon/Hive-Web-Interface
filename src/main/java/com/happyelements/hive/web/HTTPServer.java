@@ -95,27 +95,30 @@ public class HTTPServer extends Server {
 		public void handle(String target, HttpServletRequest request,
 				HttpServletResponse response, int dispatch) throws IOException,
 				ServletException {
-			LOGGER.debug("try handle " + target);
 			// check path
 			if (this.url.equals(target)) {
-				LOGGER.debug("match handler target");
-				// do auth if needed
-				if (this.need_auth) {
-					LOGGER.debug("request need auth");
-					if (Authorizer.auth(request)) {
-						LOGGER.debug("request auth done");
-						this.handle(request, response);
-					}else {
-						LOGGER.debug("request auth fail");
-						response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-					}
-				} else {
-					this.handle(request, response);
-				}
+				this.handle(request, response);
+			} else {
+				response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			}
 
 			// flag it as finished
 			Request.getRequest(request).setHandled(true);
+		}
+
+		/**
+		 * test user if authorized
+		 * @param request
+		 * 		the request
+		 * @return
+		 * 		true if user is authorize or no need for authorization
+		 */
+		protected boolean auth(HttpServletRequest request) {
+			if (need_auth) {
+				return Authorizer.auth(request);
+			} else {
+				return true;
+			}
 		}
 
 		/**
@@ -153,15 +156,14 @@ public class HTTPServer extends Server {
 			if (key == null) {
 				return null;
 			}
+
 			File old = super.get(key);
-			HTTPServer.LOGGER.debug(" try get file from cache:"
-					+ new File(HTTPServer.this.static_root, key.toString())
-							.getPath());
 			if (old == null
 					&& !(old = new File(HTTPServer.this.static_root,
 							key.toString())).exists()) {
 				old = null;
 			}
+
 			return old;
 		}
 	};
@@ -200,6 +202,9 @@ public class HTTPServer extends Server {
 					throws IOException, ServletException {
 				// access log
 				HTTPServer.LOGGER.info("access path:" + target);
+
+				// fix response
+				response.setCharacterEncoding("utf8");
 
 				// find handler
 				HTTPHandler handler = HTTPServer.this.rest.get(target);

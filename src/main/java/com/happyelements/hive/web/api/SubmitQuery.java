@@ -83,10 +83,6 @@ public class SubmitQuery extends ResultFileHandler {
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
-		// set up standard responses header
-		response.setCharacterEncoding("utf8");
-		response.setContentType("application/json");
-
 		// check method
 		if (!"POST".equals(request.getMethod())) {
 			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -94,6 +90,15 @@ public class SubmitQuery extends ResultFileHandler {
 			return;
 		}
 
+		// check auth
+		if (!auth(request)) {
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			return;
+		}
+		
+		// set up standard responses header
+		response.setContentType("application/json");
+		
 		// check user
 		String user = Authorizer.extractUser(request);
 		if (user == null) {
