@@ -66,9 +66,11 @@ public class HadoopClient {
 			this.query = query;
 			this.job_id = job_id;
 		}
-		
-		public String toString(){
-			return "user:" + user + " query_id:" + query_id + " job_id:" + job_id + " query:" + query; 
+
+		@Override
+		public String toString() {
+			return "user:" + this.user + " query_id:" + this.query_id + " job_id:"
+					+ this.job_id + " query:" + this.query;
 		}
 	}
 
@@ -92,10 +94,11 @@ public class HadoopClient {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				HadoopClient.now = System.currentTimeMillis();
+				HadoopClient.LOGGER.debug("timer refresh");
 				if (HadoopClient.refresh_request_count <= 0) {
 					return;
 				}
+				HadoopClient.now = System.currentTimeMillis();
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						// save job id
@@ -130,8 +133,8 @@ public class HadoopClient {
 						} else {
 							info.status = status;
 						}
-						
-						LOGGER.debug("refresh info:" + info);
+
+						HadoopClient.LOGGER.debug("refresh info:" + info);
 					}
 
 					// reset flag
@@ -183,7 +186,7 @@ public class HadoopClient {
 	 */
 	public static QueryInfo getQueryInfo(String id) {
 		// trigger refresh
-		refresh_request_count++;
+		HadoopClient.refresh_request_count++;
 		QueryInfo info = null;
 		for (Entry<String, Map<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
 				.entrySet()) {
@@ -201,7 +204,7 @@ public class HadoopClient {
 
 	public static Map<String, QueryInfo> getUserQuerys(String user) {
 		// trigger refresh
-		refresh_request_count++;
+		HadoopClient.refresh_request_count++;
 		return HadoopClient.USER_JOB_CACHE.get(user);
 	}
 }
