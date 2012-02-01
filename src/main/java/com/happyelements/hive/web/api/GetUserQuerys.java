@@ -27,6 +27,8 @@
 package com.happyelements.hive.web.api;
 
 import java.io.IOException;
+import java.util.Map.Entry;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,6 +45,21 @@ import com.happyelements.hive.web.HadoopClient.QueryInfo;
  *
  */
 public class GetUserQuerys extends HTTPHandler {
+
+	protected static class CompositeJobStatus extends JobStatus {
+		public final String query_id;
+		public final String query;
+
+		public CompositeJobStatus(JobStatus status, String query_id,
+				String query) {
+			super(status.getJobID(), status.setupProgress(), status
+					.mapProgress(), status.reduceProgress(), status
+					.cleanupProgress(), status.getRunState(), status
+					.getJobPriority());
+			this.query_id = query_id;
+			this.query = query;
+		}
+	}
 
 	/**
 	 * {@inheritDoc}}
@@ -63,7 +80,7 @@ public class GetUserQuerys extends HTTPHandler {
 					"do not supoort http method except for GET");
 			return;
 		}
-		
+
 		// check auth
 		if (!auth(request)) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
@@ -87,13 +104,19 @@ public class GetUserQuerys extends HTTPHandler {
 
 		// get job status
 		StringBuilder builder = new StringBuilder("{\"querys\":[");
-		for (JobStatus job : HadoopClient.getAllJobs()) {
-			// find query info
-			QueryInfo info = HadoopClient.getQueryInfo(job.getJobID()
-					.getJtIdentifier());
+		for (Entry<String, QueryInfo> entry : HadoopClient.getUserQuerys(user)
+				.entrySet()) {
+			// trick to filter dunplicate entry
+			if (entry.getKey().startsWith("job_")) {
+				continue;
+			}
 
+			QueryInfo info = entry.getValue();
 			// update access time
 			info.access = now;
+
+			// reference job status
+			JobStatus job = info.status;
 
 			// if match user
 			if (user.equals(info.user)) {
@@ -129,6 +152,7 @@ public class GetUserQuerys extends HTTPHandler {
 			}
 		}
 
+		// trim tail
 		if (builder.charAt(builder.length() - 1) == ',') {
 			builder.deleteCharAt(builder.length() - 1);
 		}

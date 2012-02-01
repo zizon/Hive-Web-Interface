@@ -29,10 +29,12 @@ package com.happyelements.hive.web;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,6 +59,7 @@ public class HadoopClient {
 		public final String query;
 		public final String job_id;
 		public long access;
+		public JobStatus status;
 
 		public QueryInfo(String user, String query_id, String query,
 				String job_id) {
@@ -67,7 +70,10 @@ public class HadoopClient {
 		}
 	}
 
+	private static int refresh_request_count = 0;
+	private static long now = System.currentTimeMillis();
 	private static final org.apache.hadoop.mapred.JobClient CLIENT;
+	private static final ConcurrentHashMap<String, Map<String, QueryInfo>> USER_JOB_CACHE;
 	static {
 		try {
 			CLIENT = new org.apache.hadoop.mapred.JobClient(new JobConf(
@@ -75,82 +81,94 @@ public class HadoopClient {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
 
-	private static long now = System.currentTimeMillis();
-	{
-		new Timer().schedule(new TimerTask() {
+		// create user job cache
+		USER_JOB_CACHE = new ConcurrentHashMap<String, Map<String, QueryInfo>>();
+
+		Timer timer = new Timer();
+		// schedule user cache update
+		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				HadoopClient.now = System.currentTimeMillis();
-				for (Entry<String, QueryInfo> entry : HadoopClient.CACHE.entrySet()) {
-					QueryInfo info = entry.getValue();
-					if (info == null || HadoopClient.now - info.access >= 3600000) {
-						HadoopClient.CACHE.remove(entry.getKey());
+				if (HadoopClient.refresh_request_count <= 0) {
+					return;
+				}
+				try {
+					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
+						// save job id
+						String job_id = status.getJobID().getJtIdentifier();
+
+						// find user querys
+						Map<String, QueryInfo> user_infos = HadoopClient.USER_JOB_CACHE
+								.get(status.getUsername());
+						if (user_infos == null) {
+							user_infos = new ConcurrentSkipListMap<String, QueryInfo>();
+							HadoopClient.USER_JOB_CACHE
+									.put(status.getUsername(), user_infos);
+						}
+
+						// update info
+						QueryInfo info = user_infos.get(job_id);
+						if (info == null) {
+							JobConf conf = new JobConf(JobTracker
+									.getLocalJobFilePath(status.getJobID()));
+							String query = conf.get("hive.query.string");
+							String query_id = conf.get("rest.query.id");
+							if (query != null) {
+								info = new QueryInfo(conf.get("he.user.name"),
+										query_id, query.replace("\n", " ")
+												.replace("\r", " ")
+												.replace("\"", "'"), job_id);
+								info.status = status;
+								info.access = HadoopClient.now;
+								user_infos.put(job_id, info);
+								user_infos.put(query_id, info);
+							}
+						} else {
+							info.status = status;
+						}
+					}
+					
+					// reset flag
+					HadoopClient.refresh_request_count = 0;
+				} catch (IOException e) {
+					HadoopClient.LOGGER.error("fail to refresh old job", e);
+				}
+			}
+		}, 0, 1000);
+
+		// schedule query info cache clean up
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				HadoopClient.now = System.currentTimeMillis();
+				for (Entry<String, Map<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
+						.entrySet()) {
+					// optimize cache size
+					boolean empty = true;
+
+					// find eviction
+					Map<String, QueryInfo> user_querys = entry.getValue();
+					for (Entry<String, QueryInfo> query_info_entry : user_querys
+							.entrySet()) {
+						empty = false;
+						QueryInfo info = query_info_entry.getValue();
+						if (info == null
+								|| HadoopClient.now - info.access >= 3600000) {
+							user_querys.remove(entry.getKey());
+						}
+					}
+
+					// no entry in map ,remove it
+					if (empty) {
+						HadoopClient.USER_JOB_CACHE.remove(entry.getKey());
 					}
 				}
 			}
 		}, 0, 60000);
+
 	}
-
-	private static final ConcurrentHashMap<String, QueryInfo> CACHE = new ConcurrentHashMap<String, QueryInfo>() {
-		private static final long serialVersionUID = -5844685816187712065L;
-
-		@Override
-		public QueryInfo put(String key, QueryInfo value) {
-			QueryInfo old = super.put(key, value);
-			if (value != null) {
-				super.put(value.query_id, value);
-				super.put(value.job_id, value);
-			}
-
-			return old;
-		}
-
-		@Override
-		public QueryInfo get(Object key) {
-			QueryInfo info = super.get(key);
-			if (info == null) {
-				JobID job_id = null;
-				try {
-					job_id = JobID.forName(key.toString());
-				} catch (Exception e) {
-					job_id = null;
-				}
-
-				if (job_id == null) {
-					try {
-						long current = System.currentTimeMillis();
-						for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
-							job_id = status.getJobID();
-							// no cache hit , cache it
-							if (!this.containsKey(job_id)) {
-								JobConf conf = new JobConf(
-										JobTracker.getLocalJobFilePath(job_id));
-								String query = conf.get("hive.query.string");
-								if (query != null) {
-									info = new QueryInfo(
-											conf.get("he.user.name"),
-											conf.get("rest.query.id"), query
-													.replace("\n", " ")
-													.replace("\r", " ")
-													.replace("\"", "'"),
-											job_id.getJtIdentifier());
-									info.access = current;
-									this.put(info.job_id, info);
-								}
-							}
-						}
-					} catch (IOException e) {
-						HadoopClient.LOGGER.error("fail to read job infos", e);
-					}
-					info = super.get(key);
-				}
-			}
-
-			return info;
-		}
-	};
 
 	/**
 	 * get all job infos
@@ -175,10 +193,22 @@ public class HadoopClient {
 	 * 		the query info
 	 */
 	public static QueryInfo getQueryInfo(String id) {
-		return HadoopClient.CACHE.get(id);
+		QueryInfo info = null;
+		for (Entry<String, Map<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
+				.entrySet()) {
+			// find match
+			if ((info = entry.getValue().get(id)) != null) {
+				break;
+			}
+		}
+		return info;
 	}
 
 	public static RunningJob getJob(JobID id) throws IOException {
 		return HadoopClient.CLIENT.getJob(id);
+	}
+
+	public static Map<String, QueryInfo> getUserQuerys(String user) {
+		return HadoopClient.USER_JOB_CACHE.get(user);
 	}
 }
