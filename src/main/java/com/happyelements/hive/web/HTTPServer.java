@@ -226,6 +226,7 @@ public class HTTPServer extends Server {
 					File file = HTTPServer.this.cache.get(target);
 
 					if (file != null) {
+						LOGGER.debug("file modify:" + file.lastModified() + " if-modified-since:" + modify);
 						// client used if modified since,so check modify time
 						if (modify != -1
 								&& file.lastModified() / 1000 <= modify / 1000) {
@@ -233,6 +234,7 @@ public class HTTPServer extends Server {
 						} else {
 							// modified
 							response.setStatus(HttpServletResponse.SC_OK);
+							response.addDateHeader("Last-Modified", file.lastModified());
 							IO.copy(new FileInputStream(file),
 									response.getOutputStream());
 						}
