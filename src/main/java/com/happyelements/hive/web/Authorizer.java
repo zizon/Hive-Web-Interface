@@ -115,10 +115,19 @@ public class Authorizer {
 
 		String user = null;
 		try {
-			user = request.getHeader("Authorization");
-			user = new String(
-					Base64.decode(user.substring(5, user.length() - 1)))
-					.split(":")[0];
+			user = request.getHeader("Authorization").substring(5);
+			// trim tailing CRLF
+			do {
+				switch (user.charAt(user.length() - 1)) {
+				case '\r':
+				case '\n':
+					user = user.substring(0, user.length() - 1);
+					continue;
+				}
+				break;
+			} while (true);
+
+			user = new String(Base64.decode(user)).split(":")[0];
 		} catch (Exception e) {
 			LOGGER.error(
 					"fail to extract user for Authorization:"
