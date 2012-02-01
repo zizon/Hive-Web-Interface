@@ -139,6 +139,7 @@ public class HTTPServer extends Server {
 
 	private File static_root;
 	private ConcurrentHashMap<String, HTTPHandler> rest = new ConcurrentHashMap<String, HTTPServer.HTTPHandler>();
+	private String default_url;
 
 	private Map<String, File> cache = new ConcurrentHashMap<String, File>() {
 		private static final long serialVersionUID = -233053974881547599L;
@@ -173,8 +174,12 @@ public class HTTPServer extends Server {
 	 * @param port
 	 * @throws IOException 
 	 */
-	public HTTPServer(String static_root, int port) throws IOException {
+	public HTTPServer(String static_root, int port, String default_url)
+			throws IOException {
 		super(port);
+
+		// set up default url
+		this.default_url = default_url;
 
 		// make static root
 		this.static_root = new File(static_root);
@@ -209,7 +214,6 @@ public class HTTPServer extends Server {
 				// find handler
 				HTTPHandler handler = HTTPServer.this.rest.get(target);
 				if (handler != null) {
-					HTTPServer.LOGGER.debug("get handle:" + target);
 					handler.handle(target, request, response, dispatch);
 				} else if (!"GET".equals(request.getMethod())) {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST,
@@ -222,25 +226,20 @@ public class HTTPServer extends Server {
 					File file = HTTPServer.this.cache.get(target);
 
 					if (file != null) {
-						HTTPServer.LOGGER.debug("get file:" + target);
 						// client used if modifyed since,so check modify time
 						if (modify != -1
 								&& file.lastModified() / 1000 > modify / 1000) {
-							HTTPServer.LOGGER.debug("get file:" + target
-									+ " not modify");
 							response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 						} else {
-							HTTPServer.LOGGER.debug("get file:" + target
-									+ " modified");
 							// modified
 							response.setStatus(HttpServletResponse.SC_OK);
 							IO.copy(new FileInputStream(file),
 									response.getOutputStream());
 						}
+					} else if (!target.endsWith(HTTPServer.this.default_url)) {
+						response.sendRedirect(HTTPServer.this.default_url);
 					} else {
 						// no content found
-						HTTPServer.LOGGER.debug("find no file:" + target
-								+ " not modify");
 						response.sendError(HttpServletResponse.SC_NOT_FOUND);
 					}
 				}

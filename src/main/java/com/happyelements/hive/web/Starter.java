@@ -40,7 +40,6 @@ import org.apache.log4j.RollingFileAppender;
 import com.happyelements.hive.web.api.GetQueryResult;
 import com.happyelements.hive.web.api.GetUserQuerys;
 import com.happyelements.hive.web.api.Kill;
-import com.happyelements.hive.web.api.NewLogin;
 import com.happyelements.hive.web.api.SubmitQuery;
 
 /**
@@ -84,7 +83,7 @@ public class Starter {
 		try {
 			if (args.length != 3) {
 				System.out
-						.println("Usage ${hadoop} jar ${jar} ${static_root} ${log_root} ${port}");
+						.println("Usage ${hadoop} jar ${jar} ${static_root} ${log_root} ${port} ${default_url}");
 				return;
 			}
 
@@ -92,13 +91,12 @@ public class Starter {
 			Starter.LOGGER.info("initialize log system done");
 			Starter.LOGGER.info("starting http server at port:" + args[2]
 					+ " staticfiles:" + args[2] + " log_root:" + args[0]);
-			
+
 			// construct and start server
-			new HTTPServer(args[0], Integer.parseInt(args[2], 10)) //
+			new HTTPServer(args[0], Integer.parseInt(args[2], 10), "/main.html") //
 					.add(new SubmitQuery("/hwi/submitQuery.jsp", args[1])) //
 					.add(new GetQueryResult("/hwi/getQueryResult", args[1])) //
 					.add(new GetUserQuerys("/hwi/getUserQuerys.jsp")) //
-					.add(new NewLogin("/hwi/new_login.jsp", "/new_main.html")) //
 					.add(new Kill("/hwi/kill.jsp")).start();
 		} catch (Exception e) {
 			e.printStackTrace();
