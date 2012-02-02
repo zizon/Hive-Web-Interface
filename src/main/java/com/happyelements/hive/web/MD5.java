@@ -72,6 +72,13 @@ public class MD5 {
 		return new String(out);
 	}
 
+	/**
+	 * digest the raw byte
+	 * @param raw
+	 * 		the raw
+	 * @return
+	 * 		the digest bytes
+	 */
 	public static byte[] digest(byte[] raw) {
 		return DIGEST.digest(raw);
 	}

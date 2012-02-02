@@ -29,7 +29,6 @@ package com.happyelements.hive.web;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,17 +39,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * utility to auth user
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
- *
  */
 public class Authorizer {
 	private static final Log LOGGER = LogFactory.getLog(Authorizer.class);
 
-	private static Map<String, Long> AUTH_CACHE = new ConcurrentHashMap<String, Long>() {
+	private Map<String, Long> AUTH_CACHE = new ConcurrentHashMap<String, Long>() {
 		private static final long serialVersionUID = -5887028771861026254L;
 		private long now = System.currentTimeMillis();
 		{
-			new Timer().schedule(new TimerTask() {
+			Central.getTimer().schedule(new TimerTask() {
 				@Override
 				public void run() {
 					now = System.currentTimeMillis();
@@ -75,11 +74,18 @@ public class Authorizer {
 		}
 	};
 
-	public static boolean auth(HttpServletRequest request) {
+	/**
+	 * auth the user
+	 * @param request
+	 * 		the http request
+	 * @return
+	 * 		true if auth OK
+	 */
+	public boolean auth(HttpServletRequest request) {
 		String auth = request.getHeader("Authorization");
 		if (auth == null) {
 			return false;
-		} else if (Authorizer.AUTH_CACHE.containsKey(auth)) {
+		} else if (AUTH_CACHE.containsKey(auth)) {
 			return true;
 		} else {
 			boolean authrized = false;
@@ -91,7 +97,7 @@ public class Authorizer {
 				connection.addRequestProperty("Authorization", auth);
 				connection.connect();
 				if (connection.getResponseCode() == HttpServletResponse.SC_OK) {
-					Authorizer.AUTH_CACHE.put(auth, System.currentTimeMillis());
+					AUTH_CACHE.put(auth, System.currentTimeMillis());
 					authrized = true;
 				}
 			} catch (Exception e) {
@@ -108,6 +114,13 @@ public class Authorizer {
 		}
 	}
 
+	/**
+	 * extract the user name from http request
+	 * @param request
+	 * 		the http request 
+	 * @return
+	 * 		the user name
+	 */
 	public static String extractUser(HttpServletRequest request) {
 		if (request == null) {
 			return null;
@@ -128,11 +141,11 @@ public class Authorizer {
 				break;
 			} while (true);
 			*/
-			user = new String(Base64.decode(request.getHeader("Authorization").substring(6))).split(":")[0];
+			user = new String(Base64.decode(request.getHeader("Authorization")
+					.substring(6))).split(":")[0];
 		} catch (Exception e) {
-			LOGGER.error(
-					"fail to extract user for Authorization:"
-							+ request.getHeader("Authorization"), e);
+			Authorizer.LOGGER.error("fail to extract user for Authorization:"
+					+ request.getHeader("Authorization"), e);
 			user = null;
 		}
 

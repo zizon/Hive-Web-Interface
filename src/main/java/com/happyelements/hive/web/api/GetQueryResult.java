@@ -50,8 +50,9 @@ public class GetQueryResult extends ResultFileHandler {
 	 * @param path
 	 * @throws IOException 
 	 */
-	public GetQueryResult(String url, String path) throws IOException {
-		super(true, url, path);
+	public GetQueryResult(Authorizer authorizer, String url, String path)
+			throws IOException {
+		super(authorizer, url, path);
 	}
 
 	/**

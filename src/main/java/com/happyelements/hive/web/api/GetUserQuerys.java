@@ -63,8 +63,8 @@ public class GetUserQuerys extends HTTPHandler {
 	/**
 	 * {@inheritDoc}}
 	 */
-	public GetUserQuerys(String url) {
-		super(true, url);
+	public GetUserQuerys(Authorizer authorizer, String url) {
+		super(authorizer, url);
 	}
 
 	/**

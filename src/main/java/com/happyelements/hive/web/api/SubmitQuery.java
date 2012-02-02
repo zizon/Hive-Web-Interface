@@ -60,7 +60,7 @@ import org.apache.hadoop.mapred.JobPriority;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import com.happyelements.hive.web.Authorizer;
-import com.happyelements.hive.web.CentralThreadPool;
+import com.happyelements.hive.web.Central;
 import com.happyelements.hive.web.MD5;
 
 /**
@@ -73,8 +73,8 @@ public class SubmitQuery extends ResultFileHandler {
 	/**
 	 * @param path
 	 */
-	public SubmitQuery(String url, String path) throws IOException {
-		super(true, url, path);
+	public SubmitQuery(Authorizer authorizer,String url, String path) throws IOException {
+		super(authorizer, url, path);
 	}
 
 	/**
@@ -177,7 +177,7 @@ public class SubmitQuery extends ResultFileHandler {
 	 */
 	protected void asyncSubmitQuery(final String user, final String query_id,
 			final String query, final HiveConf conf) {
-		CentralThreadPool.getPool().submit(new Runnable() {
+		Central.getThreadPool().submit(new Runnable() {
 			@Override
 			public void run() {
 				SessionState.start(new SessionState(conf));

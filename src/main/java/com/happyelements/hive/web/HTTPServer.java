@@ -60,7 +60,7 @@ public class HTTPServer extends Server {
 	 */
 	public static abstract class HTTPHandler extends AbstractHandler {
 		private final String url;
-		private final boolean need_auth;
+		private final Authorizer authorizer;
 
 		/**
 		 * constructor
@@ -69,8 +69,8 @@ public class HTTPServer extends Server {
 		 * @param url
 		 * 		the that match the request URL
 		 */
-		public HTTPHandler(boolean need_auth, String url) {
-			this.need_auth = need_auth;
+		public HTTPHandler(Authorizer authorizer, String url) {
+			this.authorizer = authorizer;
 			if (url != null) {
 				this.url = url;
 			} else {
@@ -84,7 +84,7 @@ public class HTTPServer extends Server {
 		 * 		the that match the request URL		
 		 */
 		public HTTPHandler(String url) {
-			this(false, url);
+			this(null, url);
 		}
 
 		/**
@@ -114,8 +114,8 @@ public class HTTPServer extends Server {
 		 * 		true if user is authorize or no need for authorization
 		 */
 		protected boolean auth(HttpServletRequest request) {
-			if (need_auth) {
-				return Authorizer.auth(request);
+			if (this.authorizer != null) {
+				return authorizer.auth(request);
 			} else {
 				return true;
 			}
@@ -138,13 +138,17 @@ public class HTTPServer extends Server {
 	}
 
 	private File static_root;
-	private ConcurrentHashMap<String, HTTPHandler> rest = new ConcurrentHashMap<String, HTTPServer.HTTPHandler>();
 	private String default_url;
+	private ConcurrentHashMap<String, HTTPHandler> rest = new ConcurrentHashMap<String, HTTPServer.HTTPHandler>();
 
 	private Map<String, File> cache = new ConcurrentHashMap<String, File>() {
 		private static final long serialVersionUID = -233053974881547599L;
 		{
 			new Timer().scheduleAtFixedRate(new TimerTask() {
+				/**
+				 * {@inheritDoc}}
+				 * @see java.util.TimerTask#run()
+				 */
 				@Override
 				public void run() {
 					clear();
@@ -152,6 +156,10 @@ public class HTTPServer extends Server {
 			}, 0, 3600000);
 		}
 
+		/**
+		 * {@inheritDoc}}
+		 * @see java.util.concurrent.ConcurrentHashMap#get(java.lang.Object)
+		 */
 		@Override
 		public File get(Object key) {
 			if (key == null) {
@@ -226,7 +234,9 @@ public class HTTPServer extends Server {
 					File file = HTTPServer.this.cache.get(target);
 
 					if (file != null) {
-						LOGGER.debug("file modify:" + file.lastModified() + " if-modified-since:" + modify);
+						HTTPServer.LOGGER.debug("file modify:"
+								+ file.lastModified() + " if-modified-since:"
+								+ modify);
 						// client used if modified since,so check modify time
 						if (modify != -1
 								&& file.lastModified() / 1000 <= modify / 1000) {
@@ -234,7 +244,8 @@ public class HTTPServer extends Server {
 						} else {
 							// modified
 							response.setStatus(HttpServletResponse.SC_OK);
-							response.addDateHeader("Last-Modified", file.lastModified());
+							response.addDateHeader("Last-Modified",
+									file.lastModified());
 							IO.copy(new FileInputStream(file),
 									response.getOutputStream());
 						}

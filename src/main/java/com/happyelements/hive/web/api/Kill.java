@@ -53,8 +53,8 @@ public class Kill extends HTTPHandler {
 	/**
 	 * {@inheritDoc}}
 	 */
-	public Kill(String url) {
-		super(true, url);
+	public Kill(Authorizer authorizer ,String url) {
+		super(authorizer, url);
 	}
 
 	/**

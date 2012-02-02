@@ -43,13 +43,20 @@ import com.happyelements.hive.web.api.Kill;
 import com.happyelements.hive.web.api.SubmitQuery;
 
 /**
+ * to start a http server
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
- *
  */
 public class Starter {
 
 	private static final Log LOGGER = LogFactory.getLog(Starter.class);
 
+	/**
+	 * initialize log
+	 * @param log
+	 * 		the log path
+	 * @throws IOException
+	 * 		throw when fail to create logs
+	 */
 	public static void initializeLogSystem(String log) throws IOException {
 		Starter.checkAndCreate(log);
 		Logger logger = Logger.getRootLogger();
@@ -68,6 +75,13 @@ public class Starter {
 		}
 	}
 
+	/**
+	 * check path
+	 * @param path
+	 * 		the path to check
+	 * @throws IOException
+	 * 		throw when path is not exist or is not directory
+	 */
 	public static void checkAndCreate(String path) throws IOException {
 		File file = new File(path);
 		if (file.exists()) {
@@ -81,12 +95,14 @@ public class Starter {
 
 	public static void main(String[] args) {
 		try {
+			// check parameter
 			if (args.length != 4) {
 				System.out
 						.println("Usage ${hadoop} jar ${jar} ${static_root} ${log_root} ${port} ${default_url}");
 				return;
 			}
 
+			// initialize log
 			Starter.initializeLogSystem(args[1]);
 			Starter.LOGGER.info("initialize log system done");
 			Starter.LOGGER.info("starting http server at port:" + args[2]
@@ -94,11 +110,14 @@ public class Starter {
 					+ " defualturl:" + args[3]);
 
 			// construct and start server
-			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3]) //
-					.add(new SubmitQuery("/hwi/submitQuery.jsp", args[1])) //
-					.add(new GetQueryResult("/hwi/getQueryResult", args[1])) //
-					.add(new GetUserQuerys("/hwi/getUserQuerys.jsp")) //
-					.add(new Kill("/hwi/kill.jsp")).start();
+			Authorizer authorizer = new Authorizer();
+			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3])
+					.add(new SubmitQuery(authorizer, "/hwi/submitQuery.jsp",
+							args[1]))
+					.add(new GetQueryResult(authorizer, "/hwi/getQueryResult",
+							args[1]))
+					.add(new GetUserQuerys(authorizer, "/hwi/getUserQuerys.jsp"))
+					.add(new Kill(authorizer, "/hwi/kill.jsp")).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -29,6 +29,7 @@ package com.happyelements.hive.web.api;
 import java.io.File;
 import java.io.IOException;
 
+import com.happyelements.hive.web.Authorizer;
 import com.happyelements.hive.web.HTTPServer.HTTPHandler;
 
 /**
@@ -38,9 +39,9 @@ import com.happyelements.hive.web.HTTPServer.HTTPHandler;
 public abstract class ResultFileHandler extends HTTPHandler {
 	private final File result_dictionary;
 
-	public ResultFileHandler(boolean need_auth, String url, String path)
+	public ResultFileHandler(Authorizer authorizer, String url, String path)
 			throws IOException {
-		super(need_auth, url);
+		super(authorizer, url);
 		this.result_dictionary = new File(path);
 		if (this.result_dictionary.exists()) {
 			if (!this.result_dictionary.isDirectory()) {

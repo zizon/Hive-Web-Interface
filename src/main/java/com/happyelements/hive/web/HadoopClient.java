@@ -52,6 +52,10 @@ public class HadoopClient {
 
 	private static final Log LOGGER = LogFactory.getLog(HadoopClient.class);
 
+	/**
+	 * query info,include job status and query/user 
+	 * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
+	 */
 	public static class QueryInfo {
 		public final String user;
 		public final String query_id;
@@ -60,14 +64,30 @@ public class HadoopClient {
 		public long access;
 		public JobStatus status;
 
+		/**
+		 * constructor
+		 * @param user
+		 * 		the user name
+		 * @param query_id
+		 * 		the query id
+		 * @param query
+		 * 		the query string
+		 * @param job_id
+		 * 		the job id
+		 */
 		public QueryInfo(String user, String query_id, String query,
 				String job_id) {
 			this.user = user;
 			this.query_id = query_id;
-			this.query = query;
+			this.query = query.replace("\n", " ").replace("\r", " ")
+					.replace("\"", "'");
 			this.job_id = job_id;
 		}
 
+		/**
+		 * {@inheritDoc}}
+		 * @see java.lang.Object#toString()
+		 */
 		@Override
 		public String toString() {
 			return "user:" + this.user + " query_id:" + this.query_id
@@ -90,7 +110,7 @@ public class HadoopClient {
 		// create user job cache
 		USER_JOB_CACHE = new ConcurrentHashMap<String, Map<String, QueryInfo>>();
 
-		Timer timer = new Timer();
+		Timer timer = Central.getTimer();
 		// schedule user cache update
 		timer.schedule(new TimerTask() {
 			@Override
@@ -122,10 +142,8 @@ public class HadoopClient {
 							String query_id = conf.get("rest.query.id");
 							if (query != null) {
 								info = new QueryInfo(conf.get("he.user.name"),
-										query_id, query.replace("\n", " ")
-												.replace("\r", " ")
-												.replace("\"", "'"), job_id);
-								
+										query_id, query, job_id);
+
 								// it *MAY* help GC
 								new SoftReference<JobStatus>(info.status);
 								info.status = status;
@@ -202,10 +220,26 @@ public class HadoopClient {
 		return info;
 	}
 
+	/**
+	 * get running job status
+	 * @param id
+	 * 		the JobID of job
+	 * @return
+	 * 		the running job if exist
+	 * @throws IOException
+	 * 		thrown when communicate to jobtracker fail
+	 */
 	public static RunningJob getJob(JobID id) throws IOException {
 		return HadoopClient.CLIENT.getJob(id);
 	}
 
+	/**
+	 * get the user query
+	 * @param user
+	 * 		the user name
+	 * @return
+	 * 		the users name
+	 */
 	public static Map<String, QueryInfo> getUserQuerys(String user) {
 		// trigger refresh
 		HadoopClient.refresh_request_count++;
