@@ -27,6 +27,7 @@
 package com.happyelements.hive.web;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
@@ -69,8 +70,8 @@ public class HadoopClient {
 
 		@Override
 		public String toString() {
-			return "user:" + this.user + " query_id:" + this.query_id + " job_id:"
-					+ this.job_id + " query:" + this.query;
+			return "user:" + this.user + " query_id:" + this.query_id
+					+ " job_id:" + this.job_id + " query:" + this.query;
 		}
 	}
 
@@ -124,6 +125,9 @@ public class HadoopClient {
 										query_id, query.replace("\n", " ")
 												.replace("\r", " ")
 												.replace("\"", "'"), job_id);
+								
+								// it *MAY* help GC
+								new SoftReference<JobStatus>(info.status);
 								info.status = status;
 								info.access = HadoopClient.now;
 								user_infos.put(job_id, info);
@@ -166,7 +170,10 @@ public class HadoopClient {
 
 					// no entry in map ,remove it
 					if (empty) {
-						HadoopClient.USER_JOB_CACHE.remove(entry.getKey());
+						// it *MAY* help GC
+						new SoftReference<Map<String, QueryInfo>>(
+								HadoopClient.USER_JOB_CACHE.remove(entry
+										.getKey()));
 					}
 				}
 			}
