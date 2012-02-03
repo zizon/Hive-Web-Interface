@@ -39,8 +39,8 @@ import org.apache.log4j.RollingFileAppender;
 
 import com.happyelements.hive.web.api.GetQueryResult;
 import com.happyelements.hive.web.api.GetUserQuerys;
-import com.happyelements.hive.web.api.Kill;
-import com.happyelements.hive.web.api.SubmitQuery;
+import com.happyelements.hive.web.api.PostKill;
+import com.happyelements.hive.web.api.PostQuery;
 
 /**
  * to start a http server
@@ -112,12 +112,12 @@ public class Starter {
 			// construct and start server
 			Authorizer authorizer = new Authorizer();
 			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3])
-					.add(new SubmitQuery(authorizer, "/hwi/submitQuery.jsp",
+					.add(new PostQuery(authorizer, "/hwi/submitQuery.jsp",
 							args[1]))
 					.add(new GetQueryResult(authorizer, "/hwi/getQueryResult",
 							args[1]))
 					.add(new GetUserQuerys(authorizer, "/hwi/getUserQuerys.jsp"))
-					.add(new Kill(authorizer, "/hwi/kill.jsp")).start();
+					.add(new PostKill(authorizer, "/hwi/kill.jsp")).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

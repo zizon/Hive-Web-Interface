@@ -75,7 +75,7 @@ public class GetQueryResult extends ResultFileHandler {
 		}
 
 		// check user
-		String user = Authorizer.extractUser(request);
+		String user = authorizer.extractUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 					"find no user name");

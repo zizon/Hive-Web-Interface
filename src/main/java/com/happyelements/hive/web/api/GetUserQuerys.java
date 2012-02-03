@@ -86,69 +86,61 @@ public class GetUserQuerys extends HTTPHandler {
 			return;
 		}
 
-		// check user
-		String user = Authorizer.extractUser(request);
-		if (user == null) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-					"find no user name");
-			return;
-		}
-
 		// get now
 		long now = System.currentTimeMillis();
 
-		// set up standard responses header
-		response.setCharacterEncoding("utf8");
-		response.setContentType("application/json");
-
 		// get job status
 		StringBuilder builder = new StringBuilder("{\"querys\":[");
-		for (Entry<String, QueryInfo> entry : HadoopClient.getUserQuerys(user)
-				.entrySet()) {
-			// trick to filter dunplicate entry
-			if (entry.getKey().startsWith("job_")) {
-				continue;
-			}
-
-			QueryInfo info = entry.getValue();
-			// update access time
-			info.access = now;
-
-			// reference job status
-			JobStatus job = info.status;
-
-			// if match user
-			if (user.equals(info.user)) {
-				builder.append("{\"id\":\"" + info.query_id + "\",");
-				switch (job.getRunState()) {
-				case JobStatus.RUNNING:
-					builder.append("\"status\":\"RUNNING\",\"map\":"
-							+ job.mapProgress() + ",\"reduce\":"
-							+ job.reduceProgress());
-					break;
-				case JobStatus.FAILED:
-					builder.append("\"status\":\"FAILED\",\"map\":"
-							+ job.mapProgress() + ",\"reduce\":"
-							+ job.reduceProgress());
-					break;
-				case JobStatus.KILLED:
-					builder.append("\"status\":\"KILLED\",\"map\":"
-							+ job.mapProgress() + ",\"reduce\":"
-							+ job.reduceProgress());
-					break;
-				case JobStatus.PREP:
-					builder.append("\"status\":\"PREP\",\"map\":"
-							+ job.mapProgress() + ",\"reduce\":"
-							+ job.reduceProgress());
-					break;
-				case JobStatus.SUCCEEDED:
-					builder.append("\"status\":\"SUCCEEDED\",\"map\":"
-							+ job.mapProgress() + ",\"reduce\":"
-							+ job.reduceProgress());
-					break;
+		String user = authorizer.extractUser(request);
+		if (user != null) {
+			for (Entry<String, QueryInfo> entry : HadoopClient.getUserQuerys(
+					user).entrySet()) {
+				// trick to filter dunplicate entry
+				if (entry.getKey().startsWith("job_")) {
+					continue;
 				}
-				builder.append(",\"query\":\"" + info.query + "\"},");
+
+				QueryInfo info = entry.getValue();
+				// update access time
+				info.access = now;
+
+				// reference job status
+				JobStatus job = info.status;
+
+				// if match user
+				if (user.equals(info.user)) {
+					builder.append("{\"id\":\"" + info.query_id + "\",");
+					switch (job.getRunState()) {
+					case JobStatus.RUNNING:
+						builder.append("\"status\":\"RUNNING\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					case JobStatus.FAILED:
+						builder.append("\"status\":\"FAILED\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					case JobStatus.KILLED:
+						builder.append("\"status\":\"KILLED\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					case JobStatus.PREP:
+						builder.append("\"status\":\"PREP\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					case JobStatus.SUCCEEDED:
+						builder.append("\"status\":\"SUCCEEDED\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					}
+					builder.append(",\"query\":\"" + info.query + "\"},");
+				}
 			}
+
 		}
 
 		// trim tail
@@ -156,6 +148,7 @@ public class GetUserQuerys extends HTTPHandler {
 			builder.deleteCharAt(builder.length() - 1);
 		}
 
+		response.setContentType("application/json");
 		response.getWriter().print(builder.append("]}").toString());
 		return;
 	}

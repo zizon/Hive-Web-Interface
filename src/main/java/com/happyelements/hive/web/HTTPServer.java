@@ -59,8 +59,8 @@ public class HTTPServer extends Server {
 	 * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
 	 */
 	public static abstract class HTTPHandler extends AbstractHandler {
-		private final String url;
-		private final Authorizer authorizer;
+		protected final String url;
+		protected final Authorizer authorizer;
 
 		/**
 		 * constructor
@@ -96,7 +96,7 @@ public class HTTPServer extends Server {
 				HttpServletResponse response, int dispatch) throws IOException,
 				ServletException {
 			// check path
-			if (this.url.equals(target)) {
+			if (this.url != null && this.url.equals(target)) {
 				this.handle(request, response);
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -135,6 +135,21 @@ public class HTTPServer extends Server {
 		protected abstract void handle(HttpServletRequest request,
 				HttpServletResponse response) throws IOException,
 				ServletException;
+	}
+
+	/**
+	 * the jsonp handler
+	 * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
+	 */
+	public static interface JsonPCapable {
+		/**
+		 * generate the json response string
+		 * @param request
+		 * 		the http request
+		 */
+		public void generateJsonResponse(String callback,
+				HttpServletRequest request, HttpServletResponse response)
+				throws IOException, ServletException;
 	}
 
 	private File static_root;
@@ -209,6 +224,7 @@ public class HTTPServer extends Server {
 
 		// add main handler(REST style)
 		this.addHandler(new AbstractHandler() {
+
 			@Override
 			public void handle(String target, HttpServletRequest request,
 					HttpServletResponse response, int dispatch)
@@ -216,17 +232,17 @@ public class HTTPServer extends Server {
 				// access log
 				HTTPServer.LOGGER.info("access path:" + target);
 
-				// fix response
-				response.setCharacterEncoding("utf8");
-
 				// find handler
 				HTTPHandler handler = HTTPServer.this.rest.get(target);
 				if (handler != null) {
+					// got handler,dispatch it
 					handler.handle(target, request, response, dispatch);
 				} else if (!"GET".equals(request.getMethod())) {
+					// not a get method , give up
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 							"do not supoort http method except for GET");
 				} else {
+					// try find static files
 					// get if modifyed
 					long modify = request.getDateHeader("If-Modified-Since");
 

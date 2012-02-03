@@ -121,7 +121,7 @@ public class Authorizer {
 	 * @return
 	 * 		the user name
 	 */
-	public static String extractUser(HttpServletRequest request) {
+	public String extractUser(HttpServletRequest request) {
 		if (request == null) {
 			return null;
 		}
