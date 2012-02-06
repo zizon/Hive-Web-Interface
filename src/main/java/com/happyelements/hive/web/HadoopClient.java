@@ -112,12 +112,7 @@ public class HadoopClient {
 
 		// create user job cache
 		JOB_CACHE = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
-		USER_JOB_CACHE = new ConcurrentHashMap<String, Map<String, QueryInfo>>() {
-			public Map<String, QueryInfo> get(Object key) {
-				LOGGER.debug("try get key:" + key);
-				return super.get(key);
-			}
-		};
+		USER_JOB_CACHE = new ConcurrentHashMap<String, Map<String, QueryInfo>>();
 
 		Timer timer = Central.getTimer();
 		// schedule user cache update
@@ -129,6 +124,7 @@ public class HadoopClient {
 				}
 				HadoopClient.now = System.currentTimeMillis();
 				try {
+					LOGGER.debug("trigger refresh jobs");
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						// save job id
 						String job_id = status.getJobID().getJtIdentifier();
@@ -139,15 +135,15 @@ public class HadoopClient {
 									.getLocalJobFilePath(status.getJobID()));
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
-							if (query != null) {
-								info = new QueryInfo(conf.get("he.user.name"),
-										query_id, query, job_id, conf);
+							String user = conf.get("he.user.name");
 
-								// it *MAY* help GC
-								new SoftReference<JobStatus>(info.status);
-								info.access = HadoopClient.now;
-								JOB_CACHE.put(job_id, info);
-							}
+							info = new QueryInfo(user == null ? "" : user, //
+									query_id == null ? "" : query_id, //
+									query == null ? "" : query, //
+									job_id, conf);
+
+							info.access = HadoopClient.now;
+							JOB_CACHE.put(job_id, info);
 						}
 
 						// update status
