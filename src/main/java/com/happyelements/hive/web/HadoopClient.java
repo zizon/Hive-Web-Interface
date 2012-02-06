@@ -271,6 +271,10 @@ public class HadoopClient {
 	public static Map<String, QueryInfo> getUserQuerys(String user) {
 		// trigger refresh
 		HadoopClient.refresh_request_count++;
-		return HadoopClient.USER_JOB_CACHE.get(user);
+		Map<String, QueryInfo> result = HadoopClient.USER_JOB_CACHE.get(user);
+		if (result == null) {
+			LOGGER.debug(USER_JOB_CACHE);
+		}
+		return result;
 	}
 }
