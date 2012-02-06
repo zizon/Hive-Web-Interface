@@ -149,16 +149,21 @@ public class HadoopClient {
 						// update status
 						info.status = status;
 
-						// find user cache
-						Map<String, QueryInfo> user_infos = USER_JOB_CACHE
-								.get(info.user);
-						if (user_infos == null) {
-							user_infos = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
-							USER_JOB_CACHE.put(info.user, user_infos);
+						// tricky way to update user cache,as a none App,user
+						// will be empty
+						if (!info.user.isEmpty()) {
+							// find user cache
+							Map<String, QueryInfo> user_infos = USER_JOB_CACHE
+									.get(info.user);
+							if (user_infos == null) {
+								user_infos = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
+								USER_JOB_CACHE.put(info.user, user_infos);
+							}
+							user_infos.put(job_id, info);
+							user_infos.put(
+									info.configuration.get("rest.query.id"),
+									info);
 						}
-						user_infos.put(job_id, info);
-						user_infos.put(info.configuration.get("rest.query.id"),
-								info);
 					}
 
 					// reset flag
