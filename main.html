@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Main</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
+-->
+<link href="/bootstrap.css" rel="stylesheet" type="text/css">
+<script type="text/javascript">
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-27887132-1']);
+	_gaq.push(['_trackPageview']);
+	{
+		var loader = {
+			queue : [],
+			total : 0,	
+			async : function(s){
+				loader.queue.push(s);
+				loader.total++;
+			},
+			complete:function(callback){
+				element = document.getElementsByTagName("script")[0];
+				callback = typeof callback == "function" ? callback : function(){}
+				while(loader.queue.length > 0){
+					tag = document.createElement("script");
+					tag.type = "text/javascript";
+					tag.async = true;
+					tag.src = loader.queue.pop()
+					tag.onload = function(){
+						if(--loader.total == 0){
+							callback();
+						}
+					};
+					element.parentNode.insertBefore(tag,element);
+
+				}
+			}
+		}
+		
+		loader.async("/jquery-1.7.1.min.js")
+		loader.async("/hwi.js")
+		//loader.async(('https:' == document.location.protocol ? 'https://ssl' : 'http://www')+ '.google-analytics.com/ga.js');
+		loader.complete(function(){
+			hwi.attatch();		
+		});
+	}
+
+</script>
+</head>
+<body>
+	<div class="container">
+		<div id="guide" class="alert alert-block">
+			<div>
+				<strong class="label label-info">Tips</strong>
+				<span id="guide-toggle">Click To Learn More</span>
+			</div>
+			<div id="usage">
+				<p>
+					Table name is <strong>data_repository</strong>
+					a query looks like
+					<blockquote>
+						select count(*) from data_repository where appid='titan_mixi_prod' and ds='2011-12-19';
+					</blockquote>
+				</p>
+				<span class="label">Defination</span>
+				<ul class="unstyled">
+					<li>appid : string,the app id ,such as fishbowl_fb_prod</li>
+					<li>ds : string, the time in the form of '2011-01-01'</li>
+					<li>gid : number,the gip user id</li>
+					<li>type : number,the record type</li>
+					<li>payload : map,key values are all strings.</li>
+					<li>time : number,record create time,for example, (2011-12-30 19:09:01) is stored as 20111230190901</li>
+				</ul>
+				<span class="label label-important">IMPORTANT:</span>
+				<p>
+					One should supply <strong>ds</strong> and <strong>appid</strong> in querys as an implementation requirement.
+				</p>
+				<span class="label label-success">Acknowledge</span>
+				<p>
+					Thanks <a href="http://jquery.com/">jQuery</a> and Twitter <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>
+				</p>
+				<button id="guide-dismiss" class="pull-right btn btn-info">Dimiss</button>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<div id="message">
+		</div>
+		<div id="login">
+			<div class="well form-search">
+				<div class="span4 offset4">
+					<input id="username" type="text" class="input-small" name="user" placeholder="Username">
+					<input id="password" type="password" class="input-small" name="password" placeholder="Password">
+					<button id="go" class="btn">Go</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<div id="main" class="container">
+		<div>
+			<textarea id="query" class="span12"></textarea>
+			<button id="run" class="btn btn-primary pull-right">run</button>
+		</div>
+		<div id="result"></div>
+		<div id="jobs">
+			<table class="table table-striped table-bordered table-condensed">
+				<thead>
+					<th>id</th>
+					<th>status</th>
+					<th>progress</th>
+					<th>query</th>
+					<th>interact</th>
+				</thead>
+				<tbody id="jobs-body">
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+</html>
