@@ -49,7 +49,7 @@ public class GetUserQuerys extends HTTPHandler {
 	protected static class CompositeJobStatus extends JobStatus {
 		public final String query_id;
 		public final String query;
-
+		
 		public CompositeJobStatus(JobStatus status, String query_id,
 				String query) {
 			super(status.getJobID(), status.setupProgress(), status
