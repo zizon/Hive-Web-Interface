@@ -34,6 +34,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.JobStatus;
 
 import com.happyelements.hive.web.Authorizer;
@@ -46,10 +48,12 @@ import com.happyelements.hive.web.HadoopClient.QueryInfo;
  */
 public class GetUserQuerys extends HTTPHandler {
 
+	private static final Log LOGGER = LogFactory.getLog(GetUserQuerys.class);
+
 	protected static class CompositeJobStatus extends JobStatus {
 		public final String query_id;
 		public final String query;
-		
+
 		public CompositeJobStatus(JobStatus status, String query_id,
 				String query) {
 			super(status.getJobID(), status.setupProgress(), status
@@ -74,6 +78,7 @@ public class GetUserQuerys extends HTTPHandler {
 	@Override
 	protected void handle(HttpServletRequest request,
 			HttpServletResponse response) throws IOException, ServletException {
+		LOGGER.debug("enter handler get user querys");
 		// check method
 		if (!"GET".equals(request.getMethod())) {
 			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -98,6 +103,7 @@ public class GetUserQuerys extends HTTPHandler {
 					.getUserQuerys(user);
 			if (queryinfos != null) {
 				for (Entry<String, QueryInfo> entry : queryinfos.entrySet()) {
+					LOGGER.debug("testing job:" + entry.getKey());
 					// trick to filter dunplicate entry
 					if (entry.getKey().startsWith("job_")) {
 						continue;
@@ -110,40 +116,41 @@ public class GetUserQuerys extends HTTPHandler {
 					// reference job status
 					JobStatus job = info.status;
 
-					// if match user
-					if (user.equals(info.user)) {
-						builder.append("{\"id\":\"" + info.query_id + "\",");
-						switch (job.getRunState()) {
-						case JobStatus.RUNNING:
-							builder.append("\"status\":\"RUNNING\",\"map\":"
-									+ job.mapProgress() + ",\"reduce\":"
-									+ job.reduceProgress());
-							break;
-						case JobStatus.FAILED:
-							builder.append("\"status\":\"FAILED\",\"map\":"
-									+ job.mapProgress() + ",\"reduce\":"
-									+ job.reduceProgress());
-							break;
-						case JobStatus.KILLED:
-							builder.append("\"status\":\"KILLED\",\"map\":"
-									+ job.mapProgress() + ",\"reduce\":"
-									+ job.reduceProgress());
-							break;
-						case JobStatus.PREP:
-							builder.append("\"status\":\"PREP\",\"map\":"
-									+ job.mapProgress() + ",\"reduce\":"
-									+ job.reduceProgress());
-							break;
-						case JobStatus.SUCCEEDED:
-							builder.append("\"status\":\"SUCCEEDED\",\"map\":"
-									+ job.mapProgress() + ",\"reduce\":"
-									+ job.reduceProgress());
-							break;
-						}
-						builder.append(",\"query\":\"" + info.query + "\"},");
+					builder.append("{\"id\":\"" + info.query_id + "\",");
+					switch (job.getRunState()) {
+					case JobStatus.RUNNING:
+						builder.append("\"status\":\"RUNNING\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					case JobStatus.FAILED:
+						builder.append("\"status\":\"FAILED\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					case JobStatus.KILLED:
+						builder.append("\"status\":\"KILLED\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					case JobStatus.PREP:
+						builder.append("\"status\":\"PREP\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
+					case JobStatus.SUCCEEDED:
+						builder.append("\"status\":\"SUCCEEDED\",\"map\":"
+								+ job.mapProgress() + ",\"reduce\":"
+								+ job.reduceProgress());
+						break;
 					}
+					builder.append(",\"query\":\"" + info.query + "\"},");
 				}
+			} else {
+				LOGGER.debug("no querys for user:" + user);
 			}
+		} else {
+			LOGGER.debug("user is null");
 		}
 
 		// trim tail
