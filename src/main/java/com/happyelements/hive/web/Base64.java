@@ -42,7 +42,7 @@ public class Base64 {
 	 * @return
 	 * 		the base64 encoded string repression
 	 */
-	public static String endoce(byte[] raw) {
+	public static String encode(byte[] raw) {
 		if (raw == null) {
 			return "";
 		}
@@ -174,5 +174,9 @@ public class Base64 {
 			throw new IllegalArgumentException(
 					"could not translate character '" + character + "'");
 		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(encode("test".getBytes()));
 	}
 }

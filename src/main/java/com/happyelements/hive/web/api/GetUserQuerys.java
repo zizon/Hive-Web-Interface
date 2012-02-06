@@ -27,6 +27,7 @@
 package com.happyelements.hive.web.api;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
@@ -93,54 +94,56 @@ public class GetUserQuerys extends HTTPHandler {
 		StringBuilder builder = new StringBuilder("{\"querys\":[");
 		String user = authorizer.extractUser(request);
 		if (user != null) {
-			for (Entry<String, QueryInfo> entry : HadoopClient.getUserQuerys(
-					user).entrySet()) {
-				// trick to filter dunplicate entry
-				if (entry.getKey().startsWith("job_")) {
-					continue;
-				}
-
-				QueryInfo info = entry.getValue();
-				// update access time
-				info.access = now;
-
-				// reference job status
-				JobStatus job = info.status;
-
-				// if match user
-				if (user.equals(info.user)) {
-					builder.append("{\"id\":\"" + info.query_id + "\",");
-					switch (job.getRunState()) {
-					case JobStatus.RUNNING:
-						builder.append("\"status\":\"RUNNING\",\"map\":"
-								+ job.mapProgress() + ",\"reduce\":"
-								+ job.reduceProgress());
-						break;
-					case JobStatus.FAILED:
-						builder.append("\"status\":\"FAILED\",\"map\":"
-								+ job.mapProgress() + ",\"reduce\":"
-								+ job.reduceProgress());
-						break;
-					case JobStatus.KILLED:
-						builder.append("\"status\":\"KILLED\",\"map\":"
-								+ job.mapProgress() + ",\"reduce\":"
-								+ job.reduceProgress());
-						break;
-					case JobStatus.PREP:
-						builder.append("\"status\":\"PREP\",\"map\":"
-								+ job.mapProgress() + ",\"reduce\":"
-								+ job.reduceProgress());
-						break;
-					case JobStatus.SUCCEEDED:
-						builder.append("\"status\":\"SUCCEEDED\",\"map\":"
-								+ job.mapProgress() + ",\"reduce\":"
-								+ job.reduceProgress());
-						break;
+			Map<String, QueryInfo> queryinfos = HadoopClient
+					.getUserQuerys(user);
+			if (queryinfos != null) {
+				for (Entry<String, QueryInfo> entry : queryinfos.entrySet()) {
+					// trick to filter dunplicate entry
+					if (entry.getKey().startsWith("job_")) {
+						continue;
 					}
-					builder.append(",\"query\":\"" + info.query + "\"},");
+
+					QueryInfo info = entry.getValue();
+					// update access time
+					info.access = now;
+
+					// reference job status
+					JobStatus job = info.status;
+
+					// if match user
+					if (user.equals(info.user)) {
+						builder.append("{\"id\":\"" + info.query_id + "\",");
+						switch (job.getRunState()) {
+						case JobStatus.RUNNING:
+							builder.append("\"status\":\"RUNNING\",\"map\":"
+									+ job.mapProgress() + ",\"reduce\":"
+									+ job.reduceProgress());
+							break;
+						case JobStatus.FAILED:
+							builder.append("\"status\":\"FAILED\",\"map\":"
+									+ job.mapProgress() + ",\"reduce\":"
+									+ job.reduceProgress());
+							break;
+						case JobStatus.KILLED:
+							builder.append("\"status\":\"KILLED\",\"map\":"
+									+ job.mapProgress() + ",\"reduce\":"
+									+ job.reduceProgress());
+							break;
+						case JobStatus.PREP:
+							builder.append("\"status\":\"PREP\",\"map\":"
+									+ job.mapProgress() + ",\"reduce\":"
+									+ job.reduceProgress());
+							break;
+						case JobStatus.SUCCEEDED:
+							builder.append("\"status\":\"SUCCEEDED\",\"map\":"
+									+ job.mapProgress() + ",\"reduce\":"
+									+ job.reduceProgress());
+							break;
+						}
+						builder.append(",\"query\":\"" + info.query + "\"},");
+					}
 				}
 			}
-
 		}
 
 		// trim tail
