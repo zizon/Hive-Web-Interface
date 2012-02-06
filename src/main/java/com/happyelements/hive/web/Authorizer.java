@@ -85,7 +85,7 @@ public class Authorizer {
 		String auth = request.getHeader("Authorization");
 		if (auth == null) {
 			return false;
-		} else if (AUTH_CACHE.containsKey(auth)) {
+		} else if (this.AUTH_CACHE.containsKey(auth)) {
 			return true;
 		} else {
 			boolean authrized = false;
@@ -97,8 +97,10 @@ public class Authorizer {
 				connection.addRequestProperty("Authorization", auth);
 				connection.connect();
 				if (connection.getResponseCode() == HttpServletResponse.SC_OK) {
-					AUTH_CACHE.put(auth, System.currentTimeMillis());
+					this.AUTH_CACHE.put(auth, System.currentTimeMillis());
 					authrized = true;
+				}else {
+					Authorizer.LOGGER.error("fail to auth request:" + auth);
 				}
 			} catch (Exception e) {
 				Authorizer.LOGGER.error("fail to auth user with authorization:"
