@@ -142,6 +142,9 @@ public class HadoopClient {
 									query == null ? "" : query, //
 									job_id, conf);
 
+							if (user != null) {
+								LOGGER.debug("grap querys " + info);
+							}
 							info.access = HadoopClient.now;
 							JOB_CACHE.put(job_id, info);
 						}
@@ -271,10 +274,6 @@ public class HadoopClient {
 	public static Map<String, QueryInfo> getUserQuerys(String user) {
 		// trigger refresh
 		HadoopClient.refresh_request_count++;
-		Map<String, QueryInfo> result = HadoopClient.USER_JOB_CACHE.get(user);
-		if (result == null) {
-			LOGGER.debug(USER_JOB_CACHE);
-		}
-		return result;
+		return HadoopClient.USER_JOB_CACHE.get(user);
 	}
 }
