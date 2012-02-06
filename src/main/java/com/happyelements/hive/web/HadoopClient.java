@@ -112,7 +112,12 @@ public class HadoopClient {
 
 		// create user job cache
 		JOB_CACHE = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
-		USER_JOB_CACHE = new ConcurrentHashMap<String, Map<String, QueryInfo>>();
+		USER_JOB_CACHE = new ConcurrentHashMap<String, Map<String, QueryInfo>>() {
+			public Map<String, QueryInfo> get(Object key) {
+				LOGGER.debug("try get key:" + key);
+				return super.get(key);
+			}
+		};
 
 		Timer timer = Central.getTimer();
 		// schedule user cache update
@@ -141,6 +146,7 @@ public class HadoopClient {
 								// it *MAY* help GC
 								new SoftReference<JobStatus>(info.status);
 								info.access = HadoopClient.now;
+								JOB_CACHE.put(job_id, info);
 							}
 						}
 
@@ -148,7 +154,6 @@ public class HadoopClient {
 						info.status = status;
 
 						// find user cache
-						JOB_CACHE.put(job_id, info);
 						Map<String, QueryInfo> user_infos = USER_JOB_CACHE
 								.get(info.user);
 						if (user_infos == null) {
