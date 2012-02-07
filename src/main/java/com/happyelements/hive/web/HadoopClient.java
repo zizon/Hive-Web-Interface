@@ -165,8 +165,6 @@ public class HadoopClient {
 							JOB_CACHE.put(job_id, info);
 						}
 
-						LOGGER.debug("grap job " + job_id);
-
 						// update status
 						info.status = status;
 
