@@ -106,7 +106,7 @@ public class Starter {
 			Starter.initializeLogSystem(args[1]);
 			Starter.LOGGER.info("initialize log system done");
 			Starter.LOGGER.info("starting http server at port:" + args[2]
-					+ " staticfiles:" + args[2] + " log_root:" + args[0]
+					+ " logdir:" + args[1] + " staticfiles:" + args[0]
 					+ " defualturl:" + args[3]);
 
 			// construct and start server
@@ -114,8 +114,8 @@ public class Starter {
 			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3])
 					.add(new PostQuery(authorizer, "/hwi/submitQuery.jsp",
 							args[1]))
-					.add(new GetQueryResult(authorizer, "/hwi/getQueryResult.jsp",
-							args[1]))
+					.add(new GetQueryResult(authorizer,
+							"/hwi/getQueryResult.jsp", args[1]))
 					.add(new GetUserQuerys(authorizer, "/hwi/getUserQuerys.jsp"))
 					.add(new PostKill(authorizer, "/hwi/kill.jsp")).start();
 		} catch (Exception e) {

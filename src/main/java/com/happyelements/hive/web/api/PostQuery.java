@@ -26,41 +26,22 @@
  */
 package com.happyelements.hive.web.api;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Properties;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.FetchOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobPriority;
-import org.apache.hadoop.util.ReflectionUtils;
-
 import com.happyelements.hive.web.Authorizer;
-import com.happyelements.hive.web.Central;
 import com.happyelements.hive.web.HadoopClient;
 import com.happyelements.hive.web.MD5;
 
@@ -93,7 +74,7 @@ public class PostQuery extends ResultFileHandler {
 		}
 
 		// check auth
-		if (!auth(request)) {
+		if (!this.auth(request)) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
@@ -102,7 +83,7 @@ public class PostQuery extends ResultFileHandler {
 		response.setContentType("application/json");
 
 		// check user
-		String user = authorizer.extractUser(request);
+		String user = this.authorizer.extractUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 					"find no user name");
@@ -158,7 +139,7 @@ public class PostQuery extends ResultFileHandler {
 
 		// async submit
 		HadoopClient.asyncSubmitQuery(user, query_id, query, conf,
-				makeResultFile(user, query_id));
+				this.makeResultFile(user, query_id));
 
 		// send response
 		response.setStatus(HttpServletResponse.SC_OK);
