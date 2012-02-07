@@ -26,13 +26,13 @@ var hwi = {
 				}]);
 				$("#run").removeClass("disabled");
 			},
-			error : function() {
-				hwi.message("important","fail to submit query");
+			error : function(jqxhr, error_status,error_message) {
+				hwi.message("important",error_message);
 				$("#run").removeClass("disabled");
 			},
 			headers : {"Authorization" : "Basic " + hwi.cookie("basic")},
 			dataType: "json"
-			});
+		});
 	},
 	delay : function(callback, interval) {
 		if (callback && callback instanceof Function) {

@@ -39,11 +39,14 @@
 		}
 		
 		loader.async("/jquery-1.7.1.min.js")
-		loader.async("/hwi.js")
-		//loader.async(('https:' == document.location.protocol ? 'https://ssl' : 'http://www')+ '.google-analytics.com/ga.js');
+		loader.async("/test.js")
+
 		loader.complete(function(){
 			hwi.attatch();		
 		});
+
+		loader.async(('https:' == document.location.protocol ? 'https://ssl' : 'http://www')+ '.google-analytics.com/ga.js');
+		loader.complete();
 	}
 
 </script>
