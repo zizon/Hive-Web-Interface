@@ -159,8 +159,9 @@ public class HadoopClient {
 									job_id, conf);
 
 							info.access = HadoopClient.now;
-							HadoopClient.JOB_CACHE.put(job_id, info);
 						}
+						// force fix
+						HadoopClient.JOB_CACHE.put(job_id, info);
 
 						// update status
 						info.status = status;
@@ -176,10 +177,14 @@ public class HadoopClient {
 								HadoopClient.USER_JOB_CACHE.put(info.user,
 										user_infos);
 							}
+							// replicate it
 							user_infos.put(job_id, info);
 							user_infos.put(
 									info.configuration.get("rest.query.id"),
 									info);
+
+							// force fix
+							HadoopClient.USER_JOB_CACHE.put(info.user, user_infos);
 						}
 					}
 

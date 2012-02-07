@@ -74,7 +74,8 @@ public class PostQuery extends ResultFileHandler {
 	/**
 	 * @param path
 	 */
-	public PostQuery(Authorizer authorizer,String url, String path) throws IOException {
+	public PostQuery(Authorizer authorizer, String url, String path)
+			throws IOException {
 		super(authorizer, url, path);
 	}
 
@@ -96,10 +97,10 @@ public class PostQuery extends ResultFileHandler {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return;
 		}
-		
+
 		// set up standard responses header
 		response.setContentType("application/json");
-		
+
 		// check user
 		String user = authorizer.extractUser(request);
 		if (user == null) {
@@ -152,10 +153,12 @@ public class PostQuery extends ResultFileHandler {
 		}
 
 		// log query submit
-		PostQuery.LOGGER.info("user:" + user + " submit query:" + query);
+		PostQuery.LOGGER.info("user:" + user + " submit:" + query_id
+				+ " query:" + query);
 
 		// async submit
-		HadoopClient.asyncSubmitQuery(user, query_id, query, conf,makeResultFile(user, query_id));
+		HadoopClient.asyncSubmitQuery(user, query_id, query, conf,
+				makeResultFile(user, query_id));
 
 		// send response
 		response.setStatus(HttpServletResponse.SC_OK);
@@ -164,5 +167,4 @@ public class PostQuery extends ResultFileHandler {
 				"{\"id\":\"" + query_id + "\",\"message\":\"query submit\"}");
 	}
 
-	
 }
