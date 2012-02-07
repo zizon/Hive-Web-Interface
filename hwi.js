@@ -124,11 +124,11 @@ var hwi = {
 	},
 	historys : {},
 	jobs : function(data) {
-		 current={};
+		 var current={};
 		 for (index in data) {
-			 html ="";
-			 change=false;
-			 row = data[index];
+			 var html ="";
+			 var change=false;
+			 var row = data[index];
 			 if(row.id == "null"){
 				 continue;
 			 }
@@ -180,11 +180,12 @@ var hwi = {
 			 }
 		 }
 
-		 for( rowid in current){
-			 if(!(rowid in hwi.historys)){
-				 $("#row-"+row.id).remove();
+		 for( rowid in hwi.historys){
+			 if(!(rowid in current)){
+				 $("#row-"+rowid).remove();
 			 }
 		 }
+		 hwi.historys=current;
 	},
 	_mapping : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 	encode : function(raw){
