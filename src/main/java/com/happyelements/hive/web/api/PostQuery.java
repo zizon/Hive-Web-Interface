@@ -61,6 +61,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 import com.happyelements.hive.web.Authorizer;
 import com.happyelements.hive.web.Central;
+import com.happyelements.hive.web.HadoopClient;
 import com.happyelements.hive.web.MD5;
 
 /**
@@ -154,7 +155,7 @@ public class PostQuery extends ResultFileHandler {
 		PostQuery.LOGGER.info("user:" + user + " submit query:" + query);
 
 		// async submit
-		this.asyncSubmitQuery(user, query_id, query, conf);
+		HadoopClient.asyncSubmitQuery(user, query_id, query, conf,makeResultFile(user, query_id));
 
 		// send response
 		response.setStatus(HttpServletResponse.SC_OK);
@@ -163,90 +164,5 @@ public class PostQuery extends ResultFileHandler {
 				"{\"id\":\"" + query_id + "\",\"message\":\"query submit\"}");
 	}
 
-	/**
-	 * async submit a query
-	 * @param user
-	 * 		the submit user
-	 * @param query_id
-	 * 		the query id
-	 * @param query
-	 * 		the query
-	 * @param conf
-	 * 		the hive conf
-	 */
-	protected void asyncSubmitQuery(final String user, final String query_id,
-			final String query, final HiveConf conf) {
-		Central.getThreadPool().submit(new Runnable() {
-			@Override
-			public void run() {
-				conf.setEnum("mapred.job.priority", JobPriority.HIGH);
-				SessionState.start(new SessionState(conf));
-				Driver driver = new Driver();
-				driver.init();
-				try {
-					if (driver.run(query).getResponseCode() == 0) {
-						FileOutputStream file = null;
-						try {
-							ArrayList<String> result = new ArrayList<String>();
-							driver.getResults(result);
-							JobConf job = new JobConf(conf, ExecDriver.class);
-							FetchOperator operator = new FetchOperator(driver
-									.getPlan().getFetchTask().getWork(), job);
-							String serdeName = HiveConf.getVar(conf,
-									HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
-							Class<? extends SerDe> serdeClass = Class
-									.forName(serdeName, true,
-											JavaUtils.getClassLoader())
-									.asSubclass(SerDe.class);
-							// cast only needed for
-							// Hadoop
-							// 0.17 compatibility
-							SerDe serde = ReflectionUtils.newInstance(
-									serdeClass, null);
-							Properties serdeProp = new Properties();
-
-							// this is the default
-							// serialization format
-							if (serde instanceof DelimitedJSONSerDe) {
-								serdeProp.put(Constants.SERIALIZATION_FORMAT,
-										"" + Utilities.tabCode);
-								serdeProp.put(
-										Constants.SERIALIZATION_NULL_FORMAT,
-										driver.getPlan().getFetchTask()
-												.getWork()
-												.getSerializationNullFormat());
-							}
-							serde.initialize(job, serdeProp);
-							file = new FileOutputStream(makeResultFile(user,
-									query_id));
-							InspectableObject io = operator.getNextRow();
-							while (io != null) {
-								file.write((((Text) serde
-										.serialize(io.o, io.oi)).toString() + "\n")
-										.getBytes());
-								io = operator.getNextRow();
-							}
-						} catch (Exception e) {
-							PostQuery.LOGGER
-									.error("unexpected exception when writing result to files",
-											e);
-						} finally {
-							try {
-								if (file != null) {
-									file.close();
-								}
-							} catch (IOException e) {
-								PostQuery.LOGGER.error("fail to close file:"
-										+ file, e);
-							}
-						}
-					}
-				} catch (Exception e) {
-					PostQuery.LOGGER.error("fail to submit querys", e);
-				} finally {
-					driver.close();
-				}
-			}
-		});
-	}
+	
 }

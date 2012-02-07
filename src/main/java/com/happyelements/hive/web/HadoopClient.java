@@ -26,10 +26,14 @@
  */
 package com.happyelements.hive.web;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,12 +41,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.FetchOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobID;
+import org.apache.hadoop.mapred.JobPriority;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.JobTracker;
 import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.util.ReflectionUtils;
+
+import com.happyelements.hive.web.api.PostQuery;
 
 /**
  * wrapper for some hadoop api
@@ -99,13 +119,12 @@ public class HadoopClient {
 
 	private static int refresh_request_count = 0;
 	private static long now = System.currentTimeMillis();
-	private static final org.apache.hadoop.mapred.JobClient CLIENT;
+	private static final JobClient CLIENT;
 	private static final ConcurrentHashMap<String, Map<String, QueryInfo>> USER_JOB_CACHE;
 	private static final ConcurrentHashMap<String, QueryInfo> JOB_CACHE;
 	static {
 		try {
-			CLIENT = new org.apache.hadoop.mapred.JobClient(new JobConf(
-					new HiveConf()));
+			CLIENT = new JobClient(new JobConf(new HiveConf()));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -146,7 +165,7 @@ public class HadoopClient {
 							JOB_CACHE.put(job_id, info);
 						}
 
-						LOGGER.debug("grap querys " + info);
+						LOGGER.debug("grap job " + job_id);
 
 						// update status
 						info.status = status;
@@ -274,5 +293,91 @@ public class HadoopClient {
 		// trigger refresh
 		HadoopClient.refresh_request_count++;
 		return HadoopClient.USER_JOB_CACHE.get(user);
+	}
+
+	/**
+	 * async submit a query
+	 * @param user
+	 * 		the submit user
+	 * @param query_id
+	 * 		the query id
+	 * @param query
+	 * 		the query
+	 * @param conf
+	 * 		the hive conf
+	 */
+	public static void asyncSubmitQuery(final String user,
+			final String query_id, final String query, final HiveConf conf,
+			final File out_file) {
+		Central.getThreadPool().submit(new Runnable() {
+			@Override
+			public void run() {
+				conf.setEnum("mapred.job.priority", JobPriority.HIGH);
+				SessionState.start(new SessionState(conf));
+				Driver driver = new Driver();
+				driver.init();
+				try {
+					if (driver.run(query).getResponseCode() == 0) {
+						FileOutputStream file = null;
+						try {
+							ArrayList<String> result = new ArrayList<String>();
+							driver.getResults(result);
+							JobConf job = new JobConf(conf, ExecDriver.class);
+							FetchOperator operator = new FetchOperator(driver
+									.getPlan().getFetchTask().getWork(), job);
+							String serdeName = HiveConf.getVar(conf,
+									HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
+							Class<? extends SerDe> serdeClass = Class
+									.forName(serdeName, true,
+											JavaUtils.getClassLoader())
+									.asSubclass(SerDe.class);
+							// cast only needed for
+							// Hadoop
+							// 0.17 compatibility
+							SerDe serde = ReflectionUtils.newInstance(
+									serdeClass, null);
+							Properties serdeProp = new Properties();
+
+							// this is the default
+							// serialization format
+							if (serde instanceof DelimitedJSONSerDe) {
+								serdeProp.put(Constants.SERIALIZATION_FORMAT,
+										"" + Utilities.tabCode);
+								serdeProp.put(
+										Constants.SERIALIZATION_NULL_FORMAT,
+										driver.getPlan().getFetchTask()
+												.getWork()
+												.getSerializationNullFormat());
+							}
+							serde.initialize(job, serdeProp);
+							file = new FileOutputStream(out_file);
+							InspectableObject io = operator.getNextRow();
+							while (io != null) {
+								file.write((((Text) serde
+										.serialize(io.o, io.oi)).toString() + "\n")
+										.getBytes());
+								io = operator.getNextRow();
+							}
+						} catch (Exception e) {
+							LOGGER.error(
+									"unexpected exception when writing result to files",
+									e);
+						} finally {
+							try {
+								if (file != null) {
+									file.close();
+								}
+							} catch (IOException e) {
+								LOGGER.error("fail to close file:" + file, e);
+							}
+						}
+					}
+				} catch (Exception e) {
+					LOGGER.error("fail to submit querys", e);
+				} finally {
+					driver.close();
+				}
+			}
+		});
 	}
 }
