@@ -121,15 +121,8 @@ public class PostQuery extends ResultFileHandler {
 			analyzer.analyze(tree, new Context(conf));
 			analyzer.validate();
 		} catch (Exception e) {
-			response.setStatus(HttpServletResponse.SC_OK);
-			response.setHeader("Content-Type", "application/json");
-			response.getWriter().append(
-					new StringBuilder("{\"id\":\""
-							+ query_id
-							+ "\",\"message\":\""
-							+ (e.getMessage() != null ? e.getMessage()
-									.replace("\"", "'").replace("\n", "") : "")
-							+ "\"}").toString());
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+					e.getMessage());
 			return;
 		}
 
