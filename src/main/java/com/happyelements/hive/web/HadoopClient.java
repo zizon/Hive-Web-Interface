@@ -146,7 +146,7 @@ public class HadoopClient {
 					LOGGER.debug("trigger refresh jobs");
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						// save job id
-						String job_id = status.getJobID().getJtIdentifier();
+						String job_id = status.getJobID().toString();
 						// update info
 						QueryInfo info = JOB_CACHE.get(job_id);
 						if (info == null) {
