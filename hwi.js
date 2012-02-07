@@ -46,19 +46,16 @@ var hwi = {
 		$("#" + id).attr("disabled", true);
 		$.ajax({
 			type : "DELETE",
-			url : "/hwi/kill.jsp",
-			data : {
-				id : id
+			url : "/hwi/kill.jsp?id="+id,
+			success : function() {
+				hwi.message("notice","kill done");
+				$("#" + id).attr("disabled", true);
 			},
-		success : function() {
-			hwi.message("notice","kill done");
-			$("#" + id).attr("disabled", true);
-		},
-		error : function() {
-			hwi.message("important","kill fail");
-			$("#" + id).attr("disabled", false);
-		},
-		headers : {"Authorization" : "Basic " + hwi.cookie("basic")}
+			error : function() {
+				hwi.message("important","kill fail");
+				$("#" + id).attr("disabled", false);
+			},
+			headers : {"Authorization" : "Basic " + hwi.cookie("basic")}
 		});
 	},
 	message : function(flag,content, close) {
@@ -124,7 +121,6 @@ var hwi = {
 	},
 	historys : {},
 	jobs : function(data) {
-		 var current={};
 		 for (index in data) {
 			 var html ="";
 			 var change=false;
@@ -132,7 +128,6 @@ var hwi = {
 			 if(row.id == "null"){
 				 continue;
 			 }
-			 current[row.id]=row;
 
 			 if(row.id in hwi.historys){
 				 if(row.map != hwi.historys[row.id].map || row.reduce != hwi.historys[row.id].reduce){
@@ -179,13 +174,6 @@ var hwi = {
 				 continue;
 			 }
 		 }
-
-		 for( rowid in hwi.historys){
-			 if(!(rowid in current)){
-				 $("#row-"+rowid).remove();
-			 }
-		 }
-		 hwi.historys=current;
 	},
 	_mapping : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 	encode : function(raw){
