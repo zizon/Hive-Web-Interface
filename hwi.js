@@ -98,7 +98,7 @@ var hwi = {
 			 for (index in cookies) {
 				pair = cookies[index];
 				position=pair.indexOf("=");
-				hwi.cache_cookie[$.trim(pair.substring(0,position))] = $.trim(pair.substring(position+1));
+				hwi.cache_cookie[decodeURIComponent($.trim(pair.substring(0,position)))] = decodeURIComponent($.trim(pair.substring(position+1)));
 			}
 		}
 	},
@@ -106,7 +106,7 @@ var hwi = {
 		hwi.load_cookie();
 		hwi.cache_cookie[key]=value;
 		for(key in hwi.cache_cookie){
-			document.cookie = key+"="+hwi.cache_cookie[key]+"";
+			document.cookie = encodeURIComponent(key)+"="+encodeURIComponent(hwi.cache_cookie[key]);
 		}
 	},
 	cookie : function(key) {
@@ -196,8 +196,8 @@ var hwi = {
 					result += "==";
 					break;
 				case 2:
-					result += hwi._mapping[ raw.cahrCodeAt(tracker)] >> 2;
-					result += hwi._mapping[ ((raw.cahrCodeAt(tracker) & 0x03) << 4) |  ((raw.charCodeAt(tracker+1) & 0xf0) >> 4) ];
+					result += hwi._mapping[ raw.charCodeAt(tracker)] >> 2;
+					result += hwi._mapping[ ((raw.charCodeAt(tracker) & 0x03) << 4) |  ((raw.charCodeAt(tracker+1) & 0xf0) >> 4) ];
 					result += hwi._mapping[((raw.charCodeAt(tracker+1) & 0x0f) << 2) ];
 					result += "=";
 					break;
@@ -236,7 +236,7 @@ var hwi = {
 					hwi.delay(self, 2000)
 				},
 				headers : {
-					"Authorization" : "Basic " + hwi.cookie("basic")
+					"Authorization" : "Basic " + (hwi.cookie("basic"))
 				},
 				statusCode : {
 					401 : function(){
@@ -263,11 +263,17 @@ var hwi = {
 		var user = $("#username");
 		var password = $("#password");
 		var go = $("#go");
-		go.click(function(){
+		go.bind("click",function(){
 			hwi.auth(user.val(),password.val());
 			go.attr("disabled",true);
 			hwi.message("notice","Authoring user...");
 			hwi.authing=true;
+		});
+		password.keydown(function(event) {
+			if (event.keyCode == '13') {
+				hwi.debug("event:"+event.keyCode)
+				go.trigger("click");
+			}
 		});
 
 		$("#run").click(hwi.query);

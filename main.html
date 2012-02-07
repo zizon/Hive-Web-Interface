@@ -39,10 +39,11 @@
 		}
 		
 		loader.async("/jquery-1.7.1.min.js")
-		loader.async("/test.js")
+		loader.async("/hwi.js")
 
 		loader.complete(function(){
-			hwi.attatch();		
+			hwi.attatch();	
+			$("body").show();
 		});
 
 		loader.async(('https:' == document.location.protocol ? 'https://ssl' : 'http://www')+ '.google-analytics.com/ga.js');
@@ -51,7 +52,7 @@
 
 </script>
 </head>
-<body>
+<body style="display:none">
 	<div class="container">
 		<div id="guide" class="alert alert-block">
 			<div>
