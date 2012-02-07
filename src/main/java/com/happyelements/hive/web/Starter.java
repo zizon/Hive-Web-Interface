@@ -114,7 +114,7 @@ public class Starter {
 			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3])
 					.add(new PostQuery(authorizer, "/hwi/submitQuery.jsp",
 							args[1]))
-					.add(new GetQueryResult(authorizer, "/hwi/getQueryResult",
+					.add(new GetQueryResult(authorizer, "/hwi/getQueryResult.jsp",
 							args[1]))
 					.add(new GetUserQuerys(authorizer, "/hwi/getUserQuerys.jsp"))
 					.add(new PostKill(authorizer, "/hwi/kill.jsp")).start();

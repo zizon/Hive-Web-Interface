@@ -62,8 +62,6 @@ import org.apache.hadoop.mapred.JobTracker;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import com.happyelements.hive.web.api.PostQuery;
-
 /**
  * wrapper for some hadoop api
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
@@ -77,11 +75,11 @@ public class HadoopClient {
 	 * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
 	 */
 	public static class QueryInfo {
-		public final String user;
-		public final String query_id;
-		public final String query;
-		public final String job_id;
-		public final Configuration configuration;
+		public String user;
+		public String query_id;
+		public String query;
+		public String job_id;
+		public Configuration configuration;
 		public long access;
 		public JobStatus status;
 
@@ -143,12 +141,11 @@ public class HadoopClient {
 				}
 				HadoopClient.now = System.currentTimeMillis();
 				try {
-					LOGGER.debug("trigger refresh jobs");
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						// save job id
 						String job_id = status.getJobID().toString();
 						// update info
-						QueryInfo info = JOB_CACHE.get(job_id);
+						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
 						if (info == null) {
 							JobConf conf = new JobConf(JobTracker
 									.getLocalJobFilePath(status.getJobID()));
@@ -162,7 +159,7 @@ public class HadoopClient {
 									job_id, conf);
 
 							info.access = HadoopClient.now;
-							JOB_CACHE.put(job_id, info);
+							HadoopClient.JOB_CACHE.put(job_id, info);
 						}
 
 						// update status
@@ -172,11 +169,12 @@ public class HadoopClient {
 						// will be empty
 						if (!info.user.isEmpty()) {
 							// find user cache
-							Map<String, QueryInfo> user_infos = USER_JOB_CACHE
+							Map<String, QueryInfo> user_infos = HadoopClient.USER_JOB_CACHE
 									.get(info.user);
 							if (user_infos == null) {
 								user_infos = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
-								USER_JOB_CACHE.put(info.user, user_infos);
+								HadoopClient.USER_JOB_CACHE.put(info.user,
+										user_infos);
 							}
 							user_infos.put(job_id, info);
 							user_infos.put(
@@ -227,11 +225,12 @@ public class HadoopClient {
 				}
 
 				// clear jobs
-				for (Entry<String, QueryInfo> entry : JOB_CACHE.entrySet()) {
+				for (Entry<String, QueryInfo> entry : HadoopClient.JOB_CACHE
+						.entrySet()) {
 					QueryInfo info = entry.getValue();
 					if (info == null
 							|| HadoopClient.now - info.access >= 3600000) {
-						JOB_CACHE.remove(entry.getKey());
+						HadoopClient.JOB_CACHE.remove(entry.getKey());
 					}
 				}
 			}
@@ -252,7 +251,7 @@ public class HadoopClient {
 
 		QueryInfo info;
 		// lucky case
-		if ((info = JOB_CACHE.get(id)) != null) {
+		if ((info = HadoopClient.JOB_CACHE.get(id)) != null) {
 			return info;
 		}
 
@@ -357,21 +356,22 @@ public class HadoopClient {
 								io = operator.getNextRow();
 							}
 						} catch (Exception e) {
-							LOGGER.error(
-									"unexpected exception when writing result to files",
-									e);
+							HadoopClient.LOGGER
+									.error("unexpected exception when writing result to files",
+											e);
 						} finally {
 							try {
 								if (file != null) {
 									file.close();
 								}
 							} catch (IOException e) {
-								LOGGER.error("fail to close file:" + file, e);
+								HadoopClient.LOGGER.error("fail to close file:"
+										+ file, e);
 							}
 						}
 					}
 				} catch (Exception e) {
-					LOGGER.error("fail to submit querys", e);
+					HadoopClient.LOGGER.error("fail to submit querys", e);
 				} finally {
 					driver.close();
 				}

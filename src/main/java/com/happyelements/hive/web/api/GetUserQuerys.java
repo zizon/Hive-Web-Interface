@@ -78,7 +78,6 @@ public class GetUserQuerys extends HTTPHandler {
 	@Override
 	protected void handle(HttpServletRequest request,
 			HttpServletResponse response) throws IOException, ServletException {
-		LOGGER.debug("enter handler get user querys");
 		// check method
 		if (!"GET".equals(request.getMethod())) {
 			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -103,7 +102,6 @@ public class GetUserQuerys extends HTTPHandler {
 					.getUserQuerys(user);
 			if (queryinfos != null) {
 				for (Entry<String, QueryInfo> entry : queryinfos.entrySet()) {
-					LOGGER.debug("testing job:" + entry.getKey());
 					// trick to filter dunplicate entry
 					if (entry.getKey().startsWith("job_")) {
 						continue;
@@ -146,11 +144,7 @@ public class GetUserQuerys extends HTTPHandler {
 					}
 					builder.append(",\"query\":\"" + info.query + "\"},");
 				}
-			} else {
-				LOGGER.debug("no querys for user:" + user);
 			}
-		} else {
-			LOGGER.debug("user is null");
 		}
 
 		// trim tail
