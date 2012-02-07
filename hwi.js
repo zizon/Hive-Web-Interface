@@ -122,57 +122,58 @@ var hwi = {
 	historys : {},
 	jobs : function(data) {
 		 for (index in data) {
-			 var html ="";
-			 var change=false;
-			 var row = data[index];
-			 if(row.id == "null"){
-				 continue;
-			 }
+		 	var html ="";
+			var change=false;
+			var row = data[index];
+			if(row.id == "null"){
+				continue;
+			}
+			
+			if(row.id in hwi.historys){
+				var old = hwi.historys[row.id];
+				if(row.map != old.map || row.reduce != old.reduce){
+					hwi.debug("proress chaned");
+					$("#"+row.id+"-progress").replaceWith("<td id='"+row.id+"-progress'>"+(row.map* 100 + row.reduce * 100)/2+"%</td>");
+					change=true;
+				}
+				if(row.status != old.status){
+					hwi.debug("status changed");
+					$("#"+row.id+"-status").replaceWith("<td id='"+row.id+"-status'>"+row.status+"</td>");
+					change=true;
+				}
 
-			 if(row.id in hwi.historys){
-				 if(row.map != hwi.historys[row.id].map || row.reduce != hwi.historys[row.id].reduce){
-					 hwi.debug("proress chaned");
-					 $("#"+row.id+"-progress").replaceWith("<td id='"+row.id+"-progress'>"+(row.map* 100 + row.reduce * 100)/2+"%</td>");
-					 change=true;
-				 }
-				 if(row.status != hwi.historys[row.id].status){
-					 hwi.debug("status changed");
-					 $("#"+row.id+"-status").replaceWith("<td id='"+row.id+"-status'>"+row.status+"</td>");
-					 change=true;
-				 }
+				if(change == true){
+					if(row.status == "SUCCEEDED"){
+						$("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.fetch(\""+row.id+"\")' class='btn'>fetch</button>");
+					}else{
+						$("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.kill(\""+row.id+"\")' class='btn'>kill</button>");
+					}
 
-				 if(change == true){
-					 if(row.status == "SUCCEEDED"){
-						 $("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.fetch(\""+row.id+"\")' class='btn'>fetch</button>");
-					 }else{
-						 $("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.kill(\""+row.id+"\")' class='btn'>kill</button>");
-					 }
-
-				 }
-				 hwi.historys[row.id]=row;
-				 continue;
-			 }else{
-				 hwi.historys[row.id]=row;
-				 html += "<tr id='row-"+row.id+"'>";
-				 html += "<td>" + row.id + "</td>";
-				 html += "<td id='"+row.id+"-status'>" + row.status + "</td>";
-				 html += "<td id='"+row.id+"-progress'>" + (row.map * 100 + row.reduce * 100) / 2 + "%</td>";
-				 html += "<td>" + row.query + "</td>";
-				 html += "<td>";
-				 if (row.status == "SUCCEEDED") {
-					 html += "<button id='" + row.id
-						 + "' onclick='hwi.fetch(\"" + row.id
-						 + "\")' class='btn'>fetch</button>";
-				 } else {
-					 html += "<button id='" + row.id
-						 + "' onclick='hwi.kill(\"" + row.id
-						 + "\")' class='btn'>kill</button>";
-				 }
-				 html += "</td>";
-				 html += "</tr>";
-				 $("#jobs-body").append(html);
-				 continue;
-			 }
+				}
+				hwi.historys[row.id] = row;
+				continue;
+			}else{
+				hwi.historys[row.id]=row;
+				html += "<tr id='row-"+row.id+"'>";
+				html += "<td>" + row.id + "</td>";
+				html += "<td id='"+row.id+"-status'>" + row.status + "</td>";
+				html += "<td id='"+row.id+"-progress'>" + (row.map * 100 + row.reduce * 100) / 2 + "%</td>";
+				html += "<td>" + row.query + "</td>";
+				html += "<td>";
+				if (row.status == "SUCCEEDED") {
+					html += "<button id='" + row.id
+						+ "' onclick='hwi.fetch(\"" + row.id
+						+ "\")' class='btn'>fetch</button>";
+				} else {
+					html += "<button id='" + row.id
+						+ "' onclick='hwi.kill(\"" + row.id
+						+ "\")' class='btn'>kill</button>";
+				}
+				html += "</td>";
+				html += "</tr>";
+				$("#jobs-body").append(html);
+				continue;
+			}
 		 }
 	},
 	_mapping : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
