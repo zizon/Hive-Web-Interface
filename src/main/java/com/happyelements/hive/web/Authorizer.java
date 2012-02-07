@@ -99,12 +99,13 @@ public class Authorizer {
 				if (connection.getResponseCode() == HttpServletResponse.SC_OK) {
 					this.AUTH_CACHE.put(auth, System.currentTimeMillis());
 					authrized = true;
-				}else {
-					Authorizer.LOGGER.error("fail to auth request:" + auth);
+				} else {
+					Authorizer.LOGGER.error("fail to auth request:" + auth
+							+ " from ip:" + request.getRemoteAddr());
 				}
 			} catch (Exception e) {
 				Authorizer.LOGGER.error("fail to auth user with authorization:"
-						+ auth, e);
+						+ auth + " from ip:" + request.getRemoteAddr(), e);
 				authrized = false;
 			} finally {
 				if (connection != null) {
@@ -130,19 +131,6 @@ public class Authorizer {
 
 		String user = null;
 		try {
-			/*
-			user = request.getHeader("Authorization").substring(6);
-			// trim tailing CRLF
-			do {
-				switch (user.charAt(user.length() - 1)) {
-				case '\r':
-				case '\n':
-					user = user.substring(0, user.length() - 1);
-					continue;
-				}
-				break;
-			} while (true);
-			*/
 			user = new String(Base64.decode(request.getHeader("Authorization")
 					.substring(6))).split(":")[0];
 		} catch (Exception e) {
