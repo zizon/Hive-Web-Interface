@@ -175,9 +175,4 @@ public class Base64 {
 					"could not translate character '" + character + "'");
 		}
 	}
-	
-	public static void main(String[] args) {
-		System.out.println("	 ".charAt(0) == '\t');
-		System.out.println( new String( decode("ZmVuZ2xlaS55b3U6eW91ZmVuZ2xlaTEy0zQ=")));
-	}
 }
