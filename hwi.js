@@ -1,6 +1,7 @@
 var hwi = {
+	developer : false,
 	debug : function(message) {
-		if (true && console && console.debug
+		if (hwi.developer && console && console.debug
 				&& console.debug instanceof Function) {
 			console.debug(message);
 		}
@@ -231,8 +232,8 @@ var hwi = {
 					hwi.jobs(data["querys"])
 					hwi.delay(self, 2000)
 				},
-				error : function() {
-					hwi.debug("refresh querys fail")
+				error : function(jqXHR, textStatus, errorThrown) {
+					hwi.debug("refresh querys fail "+textStatus + " " +errorThrown);
 					hwi.delay(self, 2000)
 				},
 				headers : {
@@ -241,6 +242,7 @@ var hwi = {
 				statusCode : {
 					401 : function(){
 						var change = false;
+
 						if(hwi.authing){
 							hwi.message("important","fail to auth user");
 							$("#go").attr("disabled",false);
@@ -248,7 +250,7 @@ var hwi = {
 						}
 
 						if(change){
-							hwi.message("important","require auth");
+							hwi.message("important","require login");
 							login.show();
 							main.hide();
 						}
