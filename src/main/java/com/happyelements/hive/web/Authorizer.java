@@ -47,12 +47,12 @@ public class Authorizer {
 
 	private Map<String, Long> AUTH_CACHE = new ConcurrentHashMap<String, Long>() {
 		private static final long serialVersionUID = -5887028771861026254L;
-		private long now = System.currentTimeMillis();
+		private long now = Central.now();
 		{
 			Central.getTimer().schedule(new TimerTask() {
 				@Override
 				public void run() {
-					now = System.currentTimeMillis();
+					now = Central.now();
 					for (Entry<String, Long> entry : entrySet()) {
 						Long that = entry.getValue();
 						if (now - that >= 3600000) {

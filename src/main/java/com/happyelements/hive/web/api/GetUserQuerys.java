@@ -34,11 +34,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.JobStatus;
 
 import com.happyelements.hive.web.Authorizer;
+import com.happyelements.hive.web.Central;
 import com.happyelements.hive.web.HadoopClient;
 import com.happyelements.hive.web.HTTPServer.HTTPHandler;
 import com.happyelements.hive.web.HadoopClient.QueryInfo;
@@ -47,8 +46,6 @@ import com.happyelements.hive.web.HadoopClient.QueryInfo;
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  */
 public class GetUserQuerys extends HTTPHandler {
-
-	private static final Log LOGGER = LogFactory.getLog(GetUserQuerys.class);
 
 	protected static class CompositeJobStatus extends JobStatus {
 		public final String query_id;
@@ -92,7 +89,7 @@ public class GetUserQuerys extends HTTPHandler {
 		}
 
 		// get now
-		long now = System.currentTimeMillis();
+		long now = Central.now();
 
 		// get job status
 		StringBuilder builder = new StringBuilder("{\"querys\":[");

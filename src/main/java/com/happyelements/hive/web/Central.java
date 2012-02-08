@@ -27,6 +27,7 @@
 package com.happyelements.hive.web;
 
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -41,7 +42,19 @@ public class Central {
 			0, Integer.MAX_VALUE, 10L, TimeUnit.SECONDS,
 			new LinkedBlockingQueue<Runnable>());
 
-	private static final Timer TIMER = new Timer();
+	private static long NOW;
+
+	private static final Timer TIMER;
+	static {
+		TIMER = new Timer();
+		NOW = System.currentTimeMillis();
+		TIMER.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				NOW = System.currentTimeMillis();
+			}
+		}, 0, 1000);
+	}
 
 	/**
 	 * get the thread pool
@@ -59,5 +72,14 @@ public class Central {
 	 */
 	public static Timer getTimer() {
 		return TIMER;
+	}
+
+	/**
+	 * get the appropriate now
+	 * @return
+	 * 		the now time(not much precise)
+	 */
+	public static long now() {
+		return NOW;
 	}
 }

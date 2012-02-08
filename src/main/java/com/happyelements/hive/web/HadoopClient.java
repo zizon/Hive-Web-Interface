@@ -116,7 +116,7 @@ public class HadoopClient {
 	}
 
 	private static int refresh_request_count = 0;
-	private static long now = System.currentTimeMillis();
+	private static long now = Central.now();
 	private static final JobClient CLIENT;
 	private static final ConcurrentHashMap<String, Map<String, QueryInfo>> USER_JOB_CACHE;
 	private static final ConcurrentHashMap<String, QueryInfo> JOB_CACHE;
@@ -139,7 +139,7 @@ public class HadoopClient {
 				if (HadoopClient.refresh_request_count <= 0) {
 					return;
 				}
-				HadoopClient.now = System.currentTimeMillis();
+				HadoopClient.now = Central.now();
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						// save job id
@@ -184,7 +184,8 @@ public class HadoopClient {
 									info);
 
 							// force fix
-							HadoopClient.USER_JOB_CACHE.put(info.user, user_infos);
+							HadoopClient.USER_JOB_CACHE.put(info.user,
+									user_infos);
 						}
 					}
 
@@ -200,7 +201,7 @@ public class HadoopClient {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				HadoopClient.now = System.currentTimeMillis();
+				HadoopClient.now = Central.now();
 
 				// clear user jobs
 				for (Entry<String, Map<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
@@ -217,6 +218,7 @@ public class HadoopClient {
 						if (info == null
 								|| HadoopClient.now - info.access >= 3600000) {
 							user_querys.remove(entry.getKey());
+							HadoopClient.JOB_CACHE.remove(entry.getKey());
 						}
 					}
 
@@ -226,16 +228,6 @@ public class HadoopClient {
 						new SoftReference<Map<String, QueryInfo>>(
 								HadoopClient.USER_JOB_CACHE.remove(entry
 										.getKey()));
-					}
-				}
-
-				// clear jobs
-				for (Entry<String, QueryInfo> entry : HadoopClient.JOB_CACHE
-						.entrySet()) {
-					QueryInfo info = entry.getValue();
-					if (info == null
-							|| HadoopClient.now - info.access >= 3600000) {
-						HadoopClient.JOB_CACHE.remove(entry.getKey());
 					}
 				}
 			}
