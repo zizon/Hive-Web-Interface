@@ -225,7 +225,6 @@ public class HTTPServer extends Server {
 
 		// add main handler(REST style)
 		this.addHandler(new AbstractHandler() {
-
 			@Override
 			public void handle(String target, HttpServletRequest request,
 					HttpServletResponse response, int dispatch)

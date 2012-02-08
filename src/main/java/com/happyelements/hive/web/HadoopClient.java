@@ -99,7 +99,7 @@ public class HadoopClient {
 			this.user = user;
 			this.query_id = query_id;
 			this.query = query.replace("\n", " ").replace("\r", " ")
-					.replace("\"", "'");
+					.replace("\"", "'").replace("\t", " ");
 			this.job_id = job_id;
 			this.configuration = configuration;
 		}
