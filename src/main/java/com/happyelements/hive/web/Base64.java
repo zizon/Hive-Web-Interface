@@ -177,6 +177,6 @@ public class Base64 {
 	}
 	
 	public static void main(String[] args) {
-		System.out.println(encode("test".getBytes()));
+		System.out.println( new String( decode("ZmVuZ2xlaS55b3U6eW91ZmVuZ2xlaTEy0zQ=")));
 	}
 }

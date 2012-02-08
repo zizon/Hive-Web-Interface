@@ -184,7 +184,8 @@ public class HTTPServer extends Server {
 			File old = super.get(key);
 			if (old == null
 					&& !(old = new File(HTTPServer.this.static_root,
-							key.toString())).exists()) {
+							key.toString())).exists() //
+					&& !old.isFile()) {
 				old = null;
 			}
 
