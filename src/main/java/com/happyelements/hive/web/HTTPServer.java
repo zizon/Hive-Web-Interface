@@ -230,7 +230,7 @@ public class HTTPServer extends Server {
 					HttpServletResponse response, int dispatch)
 					throws IOException, ServletException {
 				// access log
-				HTTPServer.LOGGER.info("access path:" + target);
+				HTTPServer.LOGGER.info("access path:" + target + " user-agent:"+ request.getHeader("User-Agent") + " ip:" + request.getRemoteHost());
 
 				// find handler
 				HTTPHandler handler = HTTPServer.this.rest.get(target);
