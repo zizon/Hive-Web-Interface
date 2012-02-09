@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mortbay.jetty.MimeTypes;
 import org.mortbay.jetty.Request;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
@@ -230,7 +231,9 @@ public class HTTPServer extends Server {
 					HttpServletResponse response, int dispatch)
 					throws IOException, ServletException {
 				// access log
-				HTTPServer.LOGGER.info("access path:" + target + " user-agent:"+ request.getHeader("User-Agent") + " ip:" + request.getRemoteHost());
+				HTTPServer.LOGGER.info("access path:" + target + " user-agent:"
+						+ request.getHeader("User-Agent") + " ip:"
+						+ request.getRemoteHost());
 
 				// find handler
 				HTTPHandler handler = HTTPServer.this.rest.get(target);
@@ -259,6 +262,7 @@ public class HTTPServer extends Server {
 							response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 						} else {
 							// modified
+							mime(target, response);
 							response.setStatus(HttpServletResponse.SC_OK);
 							response.addDateHeader("Last-Modified",
 									file.lastModified());
@@ -291,5 +295,24 @@ public class HTTPServer extends Server {
 			this.rest.put(handler.url, handler);
 		}
 		return this;
+	}
+
+	/**
+	 * attach content type
+	 * @param url
+	 * 		the target url
+	 * @param response
+	 * 		the response
+	 */
+	protected void mime(String url, HttpServletResponse response) {
+		if (url == null || response == null) {
+			return;
+		}
+
+		if (url.endsWith(".js")) {
+			response.setContentType("application/javascript");
+		} else if (url.endsWith(".css")) {
+			response.setContentType("text/css");
+		}
 	}
 }
