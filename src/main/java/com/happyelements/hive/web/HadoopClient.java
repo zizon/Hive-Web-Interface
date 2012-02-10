@@ -139,17 +139,17 @@ public class HadoopClient {
 				if (HadoopClient.refresh_request_count <= 0) {
 					return;
 				}
-				LOGGER.debug("triger scheduler");
+				HadoopClient.LOGGER.debug("triger scheduler");
 				HadoopClient.now = Central.now();
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						// save job id
 						String job_id = status.getJobID().toString();
-						LOGGER.debug("get job:" + job_id);
+						HadoopClient.LOGGER.debug("get job:" + job_id);
 						// update info
 						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
 						if (info == null) {
-							LOGGER.debug("job:" + job_id + " is missing in job_cache");
+							HadoopClient.LOGGER.debug("job:" + job_id + " is missing in job_cache");
 							JobConf conf = new JobConf(JobTracker
 									.getLocalJobFilePath(status.getJobID()));
 							String query = conf.get("hive.query.string");
@@ -172,12 +172,12 @@ public class HadoopClient {
 						// tricky way to update user cache,as a none App,user
 						// will be empty
 						if (!info.user.isEmpty()) {
-							LOGGER.debug("job:" + job_id + " user is not empty:" + info.user);
+							HadoopClient.LOGGER.debug("job:" + job_id + " user is not empty:" + info.user);
 							// find user cache
 							Map<String, QueryInfo> user_infos = HadoopClient.USER_JOB_CACHE
 									.get(info.user);
 							if (user_infos == null) {
-								LOGGER.debug("user_job_cache is missing for user:" + info.user + " jobid:" + job_id);
+								HadoopClient.LOGGER.debug("user_job_cache is missing for user:" + info.user + " jobid:" + job_id);
 								user_infos = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
 								HadoopClient.USER_JOB_CACHE.put(info.user,
 										user_infos);
