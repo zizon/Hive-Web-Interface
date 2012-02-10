@@ -62,12 +62,12 @@ public class Base64 {
 		if (tracker < raw.length) {
 			switch (raw.length - tracker) {
 			case 1:
-				buffer.append(MAPPING[raw[tracker] >> 2]) //
-						.append(MAPPING[((raw[tracker] & 0x3) << 4)]) //
+				buffer.append(MAPPING[(raw[tracker] & 0xff) >> 2]) //
+						.append(MAPPING[((raw[tracker] & 0x03) << 4)]) //
 						.append('=').append('=');
 				break;
 			case 2:
-				buffer.append(MAPPING[raw[tracker] >> 2])
+				buffer.append(MAPPING[(raw[tracker] & 0xff) >> 2])
 						.append(MAPPING[((raw[tracker] & 0x3) << 4)
 								| (raw[tracker + 1] & 0xf0) >> 4]) //
 						.append(MAPPING[((raw[tracker + 1] & 0xf) << 2)]) //
