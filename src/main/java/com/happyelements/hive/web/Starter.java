@@ -60,7 +60,7 @@ public class Starter {
 	public static void initializeLogSystem(String log) throws IOException {
 		Starter.checkAndCreate(log);
 		Logger logger = Logger.getRootLogger();
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.DEBUG);
 		logger.removeAllAppenders();
 		if (log != null) {
 			RollingFileAppender appender = new RollingFileAppender(
