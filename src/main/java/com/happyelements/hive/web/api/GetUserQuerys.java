@@ -149,7 +149,7 @@ public class GetUserQuerys extends HTTPHandler {
 			builder.deleteCharAt(builder.length() - 1);
 		}
 
-		response.setContentType("application/json");
+		response.setContentType("application/json;charset=UTF-8");
 		response.getWriter().print(builder.append("]}").toString());
 		return;
 	}
