@@ -229,7 +229,6 @@ public class HTTPServer extends Server {
 			public void handle(String target, HttpServletRequest request,
 					HttpServletResponse response, int dispatch)
 					throws IOException, ServletException {
-				response.setCharacterEncoding("UTF-8");
 				// access log
 				HTTPServer.LOGGER.info("access path:" + target + " user-agent:"
 						+ request.getHeader("User-Agent") + " ip:"
@@ -277,6 +276,8 @@ public class HTTPServer extends Server {
 					}
 				}
 
+				// fix charset
+				response.setCharacterEncoding("UTF-8");
 				// flag it as finished
 				Request.getRequest(request).setHandled(true);
 			}
