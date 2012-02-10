@@ -101,7 +101,7 @@ public class GetQueryResult extends ResultFileHandler {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 		} else {
 			response.setStatus(HttpServletResponse.SC_OK);
-			response.setContentType("application/octet-stream;charset=UTF-8");
+			response.setContentType("application/octet-stream");
 			response.addDateHeader("Last-Modified", file.lastModified());
 			IO.copy(new BufferedReader(new FileReader(file)),
 					response.getWriter());

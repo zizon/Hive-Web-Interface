@@ -136,7 +136,7 @@ public class PostQuery extends ResultFileHandler {
 
 		// send response
 		response.setStatus(HttpServletResponse.SC_OK);
-		response.setContentType("application/json;charset=UTF-8");
+		response.setContentType("application/json");
 		response.getWriter().append(
 				"{\"id\":\"" + query_id + "\",\"message\":\"query submit\"}");
 	}

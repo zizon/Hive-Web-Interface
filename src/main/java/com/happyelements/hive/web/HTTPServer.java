@@ -277,6 +277,7 @@ public class HTTPServer extends Server {
 					}
 				}
 
+				response.setCharacterEncoding("UTF-8");
 				// flag it as finished
 				Request.getRequest(request).setHandled(true);
 			}
