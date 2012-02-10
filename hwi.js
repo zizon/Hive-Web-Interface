@@ -192,12 +192,12 @@ var hwi = {
 		if(tracker < raw.length){
 			switch(raw.length - tracker) {
 				case 1:
-					result += hwi._mapping[ raw.charCodeAt(tracker) >> 2 ];
+					result += hwi._mapping[ (raw.charCodeAt(tracker) & 0xff) >> 2 ];
 					result += hwi._mapping[ ((raw.charCodeAt(tracker) & 0x03) << 4) ];
 					result += "==";
 					break;
 				case 2:
-					result += hwi._mapping[ raw.charCodeAt(tracker)] >> 2;
+					result += hwi._mapping[ (raw.charCodeAt(tracker) & 0xff) >> 2 ];
 					result += hwi._mapping[ ((raw.charCodeAt(tracker) & 0x03) << 4) |  ((raw.charCodeAt(tracker+1) & 0xf0) >> 4) ];
 					result += hwi._mapping[((raw.charCodeAt(tracker+1) & 0x0f) << 2) ];
 					result += "=";
