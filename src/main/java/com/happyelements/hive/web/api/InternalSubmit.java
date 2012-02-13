@@ -89,7 +89,7 @@ public class InternalSubmit extends HTTPHandler {
 	}
 
 	public static void main(String[] args) {
-		if (args.length != 2 || !args[0].equals("-e")) {
+		if (args.length != 2) {
 			System.out.println("Usage: hehive port 'select ...'");
 			return;
 		}
@@ -97,7 +97,8 @@ public class InternalSubmit extends HTTPHandler {
 		HttpURLConnection connection = null;
 		try {
 			connection = (HttpURLConnection) new URL("http://127.0.0.1:"
-					+ args[0].trim() + "/internal/submit?user=metric-hourly&token="
+					+ args[0].trim()
+					+ "/internal/submit?user=metric-hourly&token="
 					+ Token.Secret.token + "&query="
 					+ URLEncoder.encode(args[1], "utf8")).openConnection();
 			System.out.println("HTTP status:" + connection.getResponseCode());
