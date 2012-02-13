@@ -103,10 +103,12 @@ public class InternalSubmit extends HTTPHandler {
 		HttpURLConnection connection = null;
 		try {
 			connection = (HttpURLConnection) new URL("http://127.0.0.1:" + port
-					+ "/internal/submit?user=metric-hourly&token="
-					+ Token.Secret.token + "&query="
-					+ URLEncoder.encode(query.toString(), "utf8"))
-					.openConnection();
+					+ "/internal/submit").openConnection();
+			connection.setDoOutput(true);
+			connection.getOutputStream().write(
+					("user=metric-hourly&token=" + Token.Secret.token
+							+ "&query=" + URLEncoder.encode(query.toString(),
+							"utf8")).getBytes());
 			System.out.println("HTTP status:" + connection.getResponseCode());
 		} catch (Exception e) {
 			e.printStackTrace();
