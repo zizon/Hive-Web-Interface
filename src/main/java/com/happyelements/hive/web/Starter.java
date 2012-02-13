@@ -88,16 +88,6 @@ public class Starter {
 			appender.setMaxBackupIndex(10);
 			appender.setMaxFileSize("100MB");
 			logger.addAppender(appender);
-
-			// tricky to redirect hive log
-			Logger hive = Logger.getLogger("org.apache.hadoop.hive");
-			hive.removeAllAppenders();
-			RollingFileAppender hive_appender = new RollingFileAppender(
-					new PatternLayout("%d [%t] %-5p %c [%x] - %m%n"), new File(
-							log, "_hive_.log").getPath());
-			hive_appender.setMaxBackupIndex(10);
-			hive_appender.setMaxFileSize("100MB");
-			hive.addAppender(appender);
 		} else {
 			logger.addAppender(new ConsoleAppender(new PatternLayout(
 					"%d [%t] %-5p %c [%x] - %m%n")));
