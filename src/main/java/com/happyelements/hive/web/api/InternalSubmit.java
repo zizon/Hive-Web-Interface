@@ -75,7 +75,6 @@ public class InternalSubmit extends HTTPHandler {
 		try {
 			for (String query : request.getParameter("query").trim().split(";")) {
 				if (!(query = query.trim()).isEmpty()) {
-					LOGGER.info("|"+query+"|");
 					final HiveConf conf = new HiveConf(HiveConf.class);
 					conf.set("hadoop.job.ugi", (user == null ? "metric-hourly"
 							: user) + ",hive");
