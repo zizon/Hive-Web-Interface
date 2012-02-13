@@ -89,18 +89,24 @@ public class InternalSubmit extends HTTPHandler {
 	}
 
 	public static void main(String[] args) {
-		if (args.length != 2) {
-			System.out.println("Usage: hehive port 'select ...'");
+		if (args.length < 2) {
+			System.out.println("Usage: hehive port \"select ...\"");
 			return;
+		}
+
+		String port = args[0].trim();
+		StringBuilder query = new StringBuilder();
+		for (int i = 1; i < args.length; i++) {
+			query.append(args[i]).append(' ');
 		}
 
 		HttpURLConnection connection = null;
 		try {
-			connection = (HttpURLConnection) new URL("http://127.0.0.1:"
-					+ args[0].trim()
+			connection = (HttpURLConnection) new URL("http://127.0.0.1:" + port
 					+ "/internal/submit?user=metric-hourly&token="
 					+ Token.Secret.token + "&query="
-					+ URLEncoder.encode(args[1], "utf8")).openConnection();
+					+ URLEncoder.encode(query.toString(), "utf8"))
+					.openConnection();
 			System.out.println("HTTP status:" + connection.getResponseCode());
 		} catch (Exception e) {
 			e.printStackTrace();
