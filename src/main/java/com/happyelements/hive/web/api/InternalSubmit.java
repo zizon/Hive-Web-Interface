@@ -75,6 +75,7 @@ public class InternalSubmit extends HTTPHandler {
 		try {
 			for (String query : request.getParameter("query").trim().split(";")) {
 				if (!(query = query.trim()).isEmpty()) {
+					LOGGER.info("|"+query+"|");
 					final HiveConf conf = new HiveConf(HiveConf.class);
 					conf.set("hadoop.job.ugi", (user == null ? "metric-hourly"
 							: user) + ",hive");
@@ -102,7 +103,6 @@ public class InternalSubmit extends HTTPHandler {
 
 		HttpURLConnection connection = null;
 		try {
-			System.out.println("|" + query.toString() + "|");
 			connection = (HttpURLConnection) new URL("http://127.0.0.1:" + port
 					+ "/internal/submit?user=metric-hourly&token="
 					+ Token.Secret.token + "&query="

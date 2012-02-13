@@ -327,7 +327,7 @@ public class HadoopClient {
 				Driver driver = new Driver();
 				driver.init();
 				try {
-					if (driver.run(query+";").getResponseCode() == 0
+					if (driver.run(query).getResponseCode() == 0
 							&& out_file != null) {
 						FileOutputStream file = null;
 						try {
