@@ -27,6 +27,7 @@
 package com.happyelements.hive.web;
 
 /**
+ * tricky way to protect internal submit
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  */
 public enum Token {
@@ -37,9 +38,15 @@ public enum Token {
 	Token(String token) {
 		this.token = token;
 	}
-	
-	public boolean match(String test){
+
+	/**
+	 * if the test match the secret
+	 * @param test
+	 * 		the test secret
+	 * @return
+	 * 		true if match
+	 */
+	public boolean match(String test) {
 		return token.equals(test);
 	}
-	
 }

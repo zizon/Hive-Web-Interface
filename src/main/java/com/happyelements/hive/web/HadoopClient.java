@@ -184,8 +184,11 @@ public class HadoopClient {
 							user_infos.put(info.query_id, info);
 
 							// force fix
-							HadoopClient.USER_JOB_CACHE.put(info.user,
-									user_infos);
+							Map<String, QueryInfo> old = HadoopClient.USER_JOB_CACHE
+									.put(info.user, user_infos);
+							if (old!=null) {
+								old.putAll(user_infos);
+							}
 						}
 					}
 
