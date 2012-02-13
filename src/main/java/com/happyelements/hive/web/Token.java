@@ -25,60 +25,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.happyelements.hive.web;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
- * the central thread pool
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  */
-public class Central {
-	private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(
-			0, Integer.MAX_VALUE, 10L, TimeUnit.SECONDS,
-			new LinkedBlockingQueue<Runnable>());
+public enum Token {
+	Secret("18pacnc09131o0unca8w7341");
 
-	private static long NOW;
+	public final String token;
 
-	private static final Timer TIMER;
-	static {
-		TIMER = new Timer();
-		NOW = System.currentTimeMillis();
-		TIMER.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				NOW = System.currentTimeMillis();
-			}
-		}, 0, 1000);
+	Token(String token) {
+		this.token = token;
 	}
-
-	/**
-	 * get the thread pool
-	 * @return
-	 * 		the thread pool
-	 */
-	public static ExecutorService getThreadPool() {
-		return THREAD_POOL;
+	
+	public boolean match(String test){
+		return token.equals(test);
 	}
-
-	/**
-	 * get the timer object
-	 * @return
-	 * 		the timer
-	 */
-	public static Timer getTimer() {
-		return TIMER;
-	}
-
-	/**
-	 * get the appropriate now
-	 * @return
-	 * 		the now time(not much precise)
-	 */
-	public static long now() {
-		return NOW;
-	}
+	
 }

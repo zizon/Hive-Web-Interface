@@ -147,7 +147,8 @@ public class HadoopClient {
 						// update info
 						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
 						if (info == null) {
-							HadoopClient.LOGGER.debug("job:" + job_id + " is missing in job_cache");
+							HadoopClient.LOGGER.debug("job:" + job_id
+									+ " is missing in job_cache");
 							JobConf conf = new JobConf(JobTracker
 									.getLocalJobFilePath(status.getJobID()));
 							String query = conf.get("hive.query.string");
@@ -289,6 +290,7 @@ public class HadoopClient {
 	}
 
 	/**
+	/**
 	 * async submit a query
 	 * @param user
 	 * 		the submit user
@@ -298,19 +300,22 @@ public class HadoopClient {
 	 * 		the query
 	 * @param conf
 	 * 		the hive conf
+	 * @param priority
+	 * 		the priority
 	 */
-	public static void asyncSubmitQuery(final String user,
-			final String query_id, final String query, final HiveConf conf,
-			final File out_file) {
+	public static void asyncSubmitQuery(final String query,
+			final HiveConf conf, final File out_file, final JobPriority priority) {
 		Central.getThreadPool().submit(new Runnable() {
 			@Override
 			public void run() {
-				conf.setEnum("mapred.job.priority", JobPriority.HIGH);
+				conf.setEnum("mapred.job.priority", priority != null ? priority
+						: JobPriority.NORMAL);
 				SessionState.start(new SessionState(conf));
 				Driver driver = new Driver();
 				driver.init();
 				try {
-					if (driver.run(query).getResponseCode() == 0) {
+					if (driver.run(query).getResponseCode() == 0
+							&& out_file != null) {
 						FileOutputStream file = null;
 						try {
 							ArrayList<String> result = new ArrayList<String>();
@@ -373,5 +378,21 @@ public class HadoopClient {
 				}
 			}
 		});
+	}
+
+	/**
+	 * async submit a query
+	 * @param user
+	 * 		the submit user
+	 * @param query_id
+	 * 		the query id
+	 * @param query
+	 * 		the query
+	 * @param conf
+	 * 		the hive conf
+	 */
+	public static void asyncSubmitQuery(final String query,
+			final HiveConf conf, final File out_file) {
+		asyncSubmitQuery(query, conf, out_file, JobPriority.HIGH);
 	}
 }

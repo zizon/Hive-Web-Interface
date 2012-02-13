@@ -131,7 +131,7 @@ public class PostQuery extends ResultFileHandler {
 				+ " query:" + query);
 
 		// async submit
-		HadoopClient.asyncSubmitQuery(user, query_id, query, conf,
+		HadoopClient.asyncSubmitQuery(query, conf,
 				this.makeResultFile(user, query_id));
 
 		// send response

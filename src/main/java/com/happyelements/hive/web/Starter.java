@@ -39,6 +39,7 @@ import org.apache.log4j.RollingFileAppender;
 
 import com.happyelements.hive.web.api.GetQueryResult;
 import com.happyelements.hive.web.api.GetUserQuerys;
+import com.happyelements.hive.web.api.InternalSubmit;
 import com.happyelements.hive.web.api.PostKill;
 import com.happyelements.hive.web.api.PostQuery;
 
@@ -49,6 +50,24 @@ import com.happyelements.hive.web.api.PostQuery;
 public class Starter {
 
 	private static final Log LOGGER = LogFactory.getLog(Starter.class);
+
+	/**
+	 * check path
+	 * @param path
+	 * 		the path to check
+	 * @throws IOException
+	 * 		throw when path is not exist or is not directory
+	 */
+	public static void checkAndCreate(String path) throws IOException {
+		File file = new File(path);
+		if (file.exists()) {
+			if (!file.isDirectory()) {
+				throw new IOException(path + " is not directory");
+			}
+		} else if (!file.mkdirs()) {
+			throw new IOException("fail to create path:" + path);
+		}
+	}
 
 	/**
 	 * initialize log
@@ -69,27 +88,19 @@ public class Starter {
 			appender.setMaxBackupIndex(10);
 			appender.setMaxFileSize("100MB");
 			logger.addAppender(appender);
+
+			// tricky to redirect hive log
+			Logger hive = Logger.getLogger("org.apache.hadoop.hive");
+			hive.removeAllAppenders();
+			RollingFileAppender hive_appender = new RollingFileAppender(
+					new PatternLayout("%d [%t] %-5p %c [%x] - %m%n"), new File(
+							log, "_hive_.log").getPath());
+			hive_appender.setMaxBackupIndex(10);
+			hive_appender.setMaxFileSize("100MB");
+			hive.addAppender(appender);
 		} else {
 			logger.addAppender(new ConsoleAppender(new PatternLayout(
 					"%d [%t] %-5p %c [%x] - %m%n")));
-		}
-	}
-
-	/**
-	 * check path
-	 * @param path
-	 * 		the path to check
-	 * @throws IOException
-	 * 		throw when path is not exist or is not directory
-	 */
-	public static void checkAndCreate(String path) throws IOException {
-		File file = new File(path);
-		if (file.exists()) {
-			if (!file.isDirectory()) {
-				throw new IOException(path + " is not directory");
-			}
-		} else if (!file.mkdirs()) {
-			throw new IOException("fail to create path:" + path);
 		}
 	}
 
@@ -117,7 +128,8 @@ public class Starter {
 					.add(new GetQueryResult(authorizer,
 							"/hwi/getQueryResult.jsp", args[1]))
 					.add(new GetUserQuerys(authorizer, "/hwi/getUserQuerys.jsp"))
-					.add(new PostKill(authorizer, "/hwi/kill.jsp")).start();
+					.add(new PostKill(authorizer, "/hwi/kill.jsp"))
+					.add(new InternalSubmit("/internal/submit")).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
