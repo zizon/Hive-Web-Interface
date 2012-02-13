@@ -102,6 +102,7 @@ public class InternalSubmit extends HTTPHandler {
 
 		HttpURLConnection connection = null;
 		try {
+			System.out.println("|" + query.toString() + "|");
 			connection = (HttpURLConnection) new URL("http://127.0.0.1:" + port
 					+ "/internal/submit?user=metric-hourly&token="
 					+ Token.Secret.token + "&query="
