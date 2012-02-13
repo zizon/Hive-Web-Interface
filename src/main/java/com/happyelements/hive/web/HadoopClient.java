@@ -186,7 +186,14 @@ public class HadoopClient {
 							// force fix
 							Map<String, QueryInfo> old = HadoopClient.USER_JOB_CACHE
 									.put(info.user, user_infos);
-							if (old!=null) {
+							if (old != null) {
+								for (Entry<String, QueryInfo> entry : old
+										.entrySet()) {
+									if (!user_infos.containsKey(entry.getKey())) {
+										user_infos.put(entry.getKey(),
+												entry.getValue());
+									}
+								}
 								old.putAll(user_infos);
 							}
 						}
