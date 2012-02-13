@@ -310,7 +310,10 @@ public class HadoopClient {
 			public void run() {
 				conf.setEnum("mapred.job.priority", priority != null ? priority
 						: JobPriority.NORMAL);
-				SessionState.start(new SessionState(conf));
+				SessionState session = new SessionState(conf);
+				session.setIsSilent(true);
+				session.setIsVerbose(true);
+				SessionState.start(session);
 				Driver driver = new Driver();
 				driver.init();
 				try {
