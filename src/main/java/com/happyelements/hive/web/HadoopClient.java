@@ -175,26 +175,13 @@ public class HadoopClient {
 									.get(info.user);
 							if (user_infos == null) {
 								user_infos = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
-								HadoopClient.USER_JOB_CACHE.put(info.user,
-										user_infos);
+								Map<String, QueryInfo> old = HadoopClient.USER_JOB_CACHE
+										.putIfAbsent(info.user, user_infos);
+								user_infos = old == null ? user_infos : old;
 							}
 							// replicate it
 							user_infos.put(info.job_id, info);
 							user_infos.put(info.query_id, info);
-
-							// force fix
-							Map<String, QueryInfo> old = HadoopClient.USER_JOB_CACHE
-									.put(info.user, user_infos);
-							if (old != null) {
-								for (Entry<String, QueryInfo> entry : old
-										.entrySet()) {
-									if (!user_infos.containsKey(entry.getKey())) {
-										user_infos.put(entry.getKey(),
-												entry.getValue());
-									}
-								}
-								old.putAll(user_infos);
-							}
 						}
 					}
 
