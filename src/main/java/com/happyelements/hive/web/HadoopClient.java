@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ArrayList;
@@ -79,7 +80,6 @@ public class HadoopClient {
 		public String query_id;
 		public String query;
 		public String job_id;
-		public Configuration configuration;
 		public long access;
 		public JobStatus status;
 
@@ -95,13 +95,12 @@ public class HadoopClient {
 		 * 		the job id
 		 */
 		public QueryInfo(String user, String query_id, String query,
-				String job_id, Configuration configuration) {
+				String job_id) {
 			this.user = user;
 			this.query_id = query_id;
 			this.query = query.replace("\n", " ").replace("\r", " ")
 					.replace("\"", "'").replace("\t", " ");
 			this.job_id = job_id;
-			this.configuration = configuration;
 		}
 
 		/**
@@ -158,7 +157,7 @@ public class HadoopClient {
 							info = new QueryInfo(user == null ? "" : user, //
 									query_id == null ? "" : query_id, //
 									query == null ? "" : query, //
-									job_id, conf);
+									job_id);
 
 							info.access = HadoopClient.now;
 						}

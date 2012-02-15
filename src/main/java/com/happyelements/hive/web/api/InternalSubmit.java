@@ -35,6 +35,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -88,7 +93,7 @@ public class InternalSubmit extends HTTPHandler {
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 
-	public static void main(String[] args) {
+	public static void main1(String[] args) {
 		if (args.length < 2) {
 			System.out.println("Usage: hehive port \"select ...\"");
 			return;
@@ -116,6 +121,20 @@ public class InternalSubmit extends HTTPHandler {
 			if (connection != null) {
 				connection.disconnect();
 			}
+		}
+	}
+
+	public static void main(String[] args) {
+		try {
+			args = "-e \"select count(*) from data_repository where appid='titan_mixi_prod' and ds='2011-12-19';\" -s \"/bin/sh scripts\"".split(" ");
+			Option option=  new Option("e", true, "");
+			CommandLine commandLine = new BasicParser().parse(
+					new Options().addOption(option)
+							.addOption("s", true, "scripts"), args);
+			System.out.println(commandLine.getOptionValue('e'));
+			System.out.println(commandLine.getOptionObject('s'));
+		} catch (ParseException e) {
+			e.printStackTrace();
 		}
 	}
 }
