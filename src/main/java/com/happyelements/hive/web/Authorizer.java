@@ -49,7 +49,7 @@ public class Authorizer {
 		private static final long serialVersionUID = -5887028771861026254L;
 		private long now = Central.now();
 		{
-			Central.getTimer().schedule(new TimerTask() {
+			Central.getTimer().scheduleAtFixedRate(new TimerTask() {
 				@Override
 				public void run() {
 					now = Central.now();

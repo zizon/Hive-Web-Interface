@@ -133,7 +133,7 @@ public class HadoopClient {
 
 		Timer timer = Central.getTimer();
 		// schedule user cache update
-		timer.schedule(new TimerTask() {
+		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
 				if (HadoopClient.refresh_request_count <= 0) {
@@ -194,7 +194,7 @@ public class HadoopClient {
 		}, 0, 1000);
 
 		// schedule query info cache clean up
-		timer.schedule(new TimerTask() {
+		timer.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
 				HadoopClient.now = Central.now();

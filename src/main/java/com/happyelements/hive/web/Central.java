@@ -25,6 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 package com.happyelements.hive.web;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -47,7 +48,7 @@ public class Central {
 	static {
 		TIMER = new Timer();
 		NOW = System.currentTimeMillis();
-		TIMER.schedule(new TimerTask() {
+		TIMER.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
 				NOW = System.currentTimeMillis();
