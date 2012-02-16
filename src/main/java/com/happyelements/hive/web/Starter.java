@@ -40,6 +40,7 @@ import org.apache.log4j.RollingFileAppender;
 import com.happyelements.hive.web.api.GetQueryResult;
 import com.happyelements.hive.web.api.GetUserQuerys;
 import com.happyelements.hive.web.api.InternalSubmit;
+import com.happyelements.hive.web.api.ListAllJobs;
 import com.happyelements.hive.web.api.PostKill;
 import com.happyelements.hive.web.api.PostQuery;
 
@@ -119,6 +120,7 @@ public class Starter {
 							"/hwi/getQueryResult.jsp", args[1]))
 					.add(new GetUserQuerys(authorizer, "/hwi/getUserQuerys.jsp"))
 					.add(new PostKill(authorizer, "/hwi/kill.jsp"))
+					.add(new ListAllJobs("/all"))
 					.add(new InternalSubmit("/internal/submit")).start();
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ArrayList;
@@ -160,9 +161,8 @@ public class HadoopClient {
 									job_id);
 
 							info.access = HadoopClient.now;
+							JOB_CACHE.putIfAbsent(job_id, info);
 						}
-						// force fix
-						HadoopClient.JOB_CACHE.put(job_id, info);
 
 						// update status
 						info.status = status;
@@ -270,6 +270,19 @@ public class HadoopClient {
 	 */
 	public static RunningJob getJob(JobID id) throws IOException {
 		return HadoopClient.CLIENT.getJob(id);
+	}
+
+	/**
+	 * get running job status
+	 * @param id
+	 * 		the JobID of job
+	 * @return
+	 * 		the running job if exist
+	 * @throws IOException
+	 * 		thrown when communicate to jobtracker fail
+	 */
+	public static Map<String, QueryInfo> getAllQuerys() throws IOException {
+		return JOB_CACHE;
 	}
 
 	/**
