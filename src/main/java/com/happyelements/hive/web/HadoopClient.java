@@ -30,8 +30,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ArrayList;
@@ -42,7 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
@@ -147,8 +144,6 @@ public class HadoopClient {
 						// update info
 						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
 						if (info == null) {
-							HadoopClient.LOGGER.debug("job:" + job_id
-									+ " is missing in job_cache");
 							JobConf conf = new JobConf(JobTracker
 									.getLocalJobFilePath(status.getJobID()));
 							String query = conf.get("hive.query.string");
@@ -161,7 +156,7 @@ public class HadoopClient {
 									job_id);
 
 							info.access = HadoopClient.now;
-							JOB_CACHE.putIfAbsent(job_id, info);
+							HadoopClient.JOB_CACHE.putIfAbsent(job_id, info);
 						}
 
 						// update status
@@ -215,6 +210,8 @@ public class HadoopClient {
 								|| HadoopClient.now - info.access >= 3600000) {
 							user_querys.remove(entry.getKey());
 							HadoopClient.JOB_CACHE.remove(entry.getKey());
+							HadoopClient.LOGGER.info("remove from job cache:"
+									+ entry.getValue());
 						}
 					}
 
@@ -224,8 +221,13 @@ public class HadoopClient {
 						new SoftReference<Map<String, QueryInfo>>(
 								HadoopClient.USER_JOB_CACHE.remove(entry
 										.getKey()));
+						HadoopClient.LOGGER.info("remove from user job cache:"
+								+ entry.getValue());
 					}
 				}
+
+				HadoopClient.LOGGER.info("job cache:" + HadoopClient.JOB_CACHE.size()
+						+ " user job cache:" + HadoopClient.USER_JOB_CACHE.size());
 			}
 		}, 0, 60000);
 
@@ -282,7 +284,7 @@ public class HadoopClient {
 	 * 		thrown when communicate to jobtracker fail
 	 */
 	public static Map<String, QueryInfo> getAllQuerys() throws IOException {
-		return JOB_CACHE;
+		return HadoopClient.JOB_CACHE;
 	}
 
 	/**
@@ -405,6 +407,6 @@ public class HadoopClient {
 	 */
 	public static void asyncSubmitQuery(final String query,
 			final HiveConf conf, final File out_file) {
-		asyncSubmitQuery(query, conf, out_file, JobPriority.HIGH);
+		HadoopClient.asyncSubmitQuery(query, conf, out_file, JobPriority.HIGH);
 	}
 }

@@ -139,6 +139,11 @@ public class Authorizer {
 			user = null;
 		}
 
+		if (user != null) {
+			Authorizer.LOGGER.info("extract user:" + user + " for path:"
+					+ request.getRequestURI());
+		}
+
 		return user;
 	}
 }
