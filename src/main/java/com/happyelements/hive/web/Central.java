@@ -33,11 +33,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * the central thread pool
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  */
 public class Central {
+	private static final Log LOGGER = LogFactory.getLog(Central.class);
+
 	private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(
 			0, Integer.MAX_VALUE, 10L, TimeUnit.SECONDS,
 			new LinkedBlockingQueue<Runnable>());
@@ -46,12 +51,27 @@ public class Central {
 
 	private static final Timer TIMER;
 	static {
-		TIMER = new Timer();
-		NOW = System.currentTimeMillis();
-		TIMER.scheduleAtFixedRate(new TimerTask() {
+		TIMER = new Timer() {
+			@Override
+			public void scheduleAtFixedRate(final TimerTask task, long delay,
+					long period) {
+				super.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						try {
+							task.run();
+						} catch (Exception e) {
+							Central.LOGGER.error("timer exception : " + e);
+						}
+					}
+				}, delay, period);
+			}
+		};
+		Central.NOW = System.currentTimeMillis();
+		Central.TIMER.scheduleAtFixedRate(new TimerTask() {
 			@Override
 			public void run() {
-				NOW = System.currentTimeMillis();
+				Central.NOW = System.currentTimeMillis();
 			}
 		}, 0, 1000);
 	}
@@ -62,7 +82,7 @@ public class Central {
 	 * 		the thread pool
 	 */
 	public static ExecutorService getThreadPool() {
-		return THREAD_POOL;
+		return Central.THREAD_POOL;
 	}
 
 	/**
@@ -71,7 +91,7 @@ public class Central {
 	 * 		the timer
 	 */
 	public static Timer getTimer() {
-		return TIMER;
+		return Central.TIMER;
 	}
 
 	/**
@@ -80,6 +100,6 @@ public class Central {
 	 * 		the now time(not much precise)
 	 */
 	public static long now() {
-		return NOW;
+		return Central.NOW;
 	}
 }
