@@ -140,6 +140,10 @@ public class HadoopClient {
 				long now = Central.now();
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
+						if (now - status.getStartTime() >= 3600000) {
+							continue;
+						}
+
 						// save job id
 						String job_id = status.getJobID().toString();
 						// update info
