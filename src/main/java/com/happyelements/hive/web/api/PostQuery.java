@@ -27,6 +27,8 @@
 package com.happyelements.hive.web.api;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
