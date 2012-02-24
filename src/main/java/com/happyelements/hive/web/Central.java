@@ -55,7 +55,7 @@ public class Central {
 			@Override
 			public void scheduleAtFixedRate(final TimerTask task, long delay,
 					long period) {
-				super.schedule(new TimerTask() {
+				super.scheduleAtFixedRate(new TimerTask() {
 					@Override
 					public void run() {
 						try {
@@ -67,6 +67,7 @@ public class Central {
 				}, delay, period);
 			}
 		};
+		
 		Central.NOW = System.currentTimeMillis();
 		Central.TIMER.scheduleAtFixedRate(new TimerTask() {
 			@Override
