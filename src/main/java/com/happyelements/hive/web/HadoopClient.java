@@ -222,9 +222,7 @@ public class HadoopClient {
 					// no entry in map ,remove it
 					if (empty) {
 						// it *MAY* help GC
-						new SoftReference<Map<String, QueryInfo>>(
-								HadoopClient.USER_JOB_CACHE.remove(entry
-										.getKey()));
+						HadoopClient.USER_JOB_CACHE.remove(entry.getKey());
 						HadoopClient.LOGGER.info("remove from user job cache:"
 								+ entry.getValue());
 					}
