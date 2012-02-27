@@ -27,10 +27,7 @@
 package com.happyelements.hive.web.api;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -115,6 +112,7 @@ public class PostQuery extends ResultFileHandler {
 		// submit querys
 		String query_id = MD5.digestLiteral(user + query
 				+ System.currentTimeMillis());
+		
 		// set up hive
 		final HiveConf conf = new HiveConf(HiveConf.class);
 		conf.set("hadoop.job.ugi", user + ",hive");
@@ -135,7 +133,7 @@ public class PostQuery extends ResultFileHandler {
 								analyzer.analyze(tree, new Context(conf));
 								analyzer.validate();
 							} catch (Exception e) {
-								LOGGER.error("fail to parse query", e);
+								PostQuery.LOGGER.error("fail to parse query", e);
 								return false;
 							}
 							return true;
@@ -149,7 +147,7 @@ public class PostQuery extends ResultFileHandler {
 		} catch (Exception e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 					"submit query fail");
-			LOGGER.error("fail to parse query", e);
+			PostQuery.LOGGER.error("fail to parse query", e);
 			return;
 		}
 

@@ -68,6 +68,8 @@ public class HadoopClient {
 
 	private static final Log LOGGER = LogFactory.getLog(HadoopClient.class);
 
+	private static final long INVALIDATE_PERIOD = 3600000 * 4;
+
 	/**
 	 * query info,include job status and query/user 
 	 * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
@@ -139,9 +141,9 @@ public class HadoopClient {
 				long now = Central.now();
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
-						//if (now - status.getStartTime() >= 3600000 * 2) {
-						//	continue;
-						//}
+						if (now - status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD) {
+							continue;
+						}
 
 						// save job id
 						String job_id = status.getJobID().toString();
@@ -210,7 +212,7 @@ public class HadoopClient {
 						empty = false;
 						QueryInfo info = query_info_entry.getValue();
 						if (info == null || now - info.access >= 3600000
-								|| now - info.start_time >= 3600000 * 4) {
+								|| now - info.start_time >= HadoopClient.INVALIDATE_PERIOD) {
 							user_querys.remove(entry.getKey());
 							HadoopClient.JOB_CACHE.remove(entry.getKey());
 							HadoopClient.LOGGER.info("remove from job cache:"
