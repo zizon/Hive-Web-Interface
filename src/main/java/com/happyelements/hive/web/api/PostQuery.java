@@ -114,7 +114,7 @@ public class PostQuery extends ResultFileHandler {
 		conf.set("he.user.name", user);
 		conf.set("rest.query.id", query_id);
 
-		SessionState.start(new SessionState(conf));
+		//SessionState.start(new SessionState(conf));
 		try {
 			ASTNode tree = ParseUtils.findRootNonNullToken(new ParseDriver()
 					.parse(query));
