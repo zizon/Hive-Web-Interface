@@ -28,6 +28,8 @@ package com.happyelements.hive.web.api;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -44,6 +46,7 @@ import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import com.happyelements.hive.web.Authorizer;
+import com.happyelements.hive.web.Central;
 import com.happyelements.hive.web.HadoopClient;
 import com.happyelements.hive.web.MD5;
 
@@ -93,12 +96,16 @@ public class PostQuery extends ResultFileHandler {
 		}
 
 		// check query
-		String query = null;
+		final String query;
 		try {
 			query = request.getParameter("query").trim().split(";")[0].trim();
 		} catch (Exception e) {
 			PostQuery.LOGGER.error("fail to extract query", e);
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+					"no query string found");
+			return;
 		}
+
 		if (query == null || query.isEmpty()) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 					"no query string found");
@@ -113,15 +120,32 @@ public class PostQuery extends ResultFileHandler {
 		conf.set("hadoop.job.ugi", user + ",hive");
 		conf.set("he.user.name", user);
 		conf.set("rest.query.id", query_id);
-
-		// SessionState.start(new SessionState(conf));
 		try {
-			ASTNode tree = ParseUtils.findRootNonNullToken(new ParseDriver()
-					.parse(query));
-			BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory.get(conf,
-					tree);
-			analyzer.analyze(tree, new Context(conf));
-			analyzer.validate();
+			Boolean parsed = Central.getThreadPool()
+					.submit(new Callable<Boolean>() {
+						@Override
+						public Boolean call() throws Exception {
+							SessionState.start(new SessionState(conf));
+							try {
+								ASTNode tree = ParseUtils
+										.findRootNonNullToken(new ParseDriver()
+												.parse(query));
+								BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory
+										.get(conf, tree);
+								analyzer.analyze(tree, new Context(conf));
+								analyzer.validate();
+							} catch (Exception e) {
+								LOGGER.error("fail to parse query", e);
+								return false;
+							}
+							return true;
+						}
+					}).get();
+			if (parsed == null || !parsed) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+						"parse query fail");
+				return;
+			}
 		} catch (Exception e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 					"submit query fail");
@@ -143,5 +167,4 @@ public class PostQuery extends ResultFileHandler {
 		response.getWriter().append(
 				"{\"id\":\"" + query_id + "\",\"message\":\"query submit\"}");
 	}
-
 }
