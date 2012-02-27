@@ -29,7 +29,6 @@ package com.happyelements.hive.web;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ArrayList;
@@ -140,9 +139,9 @@ public class HadoopClient {
 				long now = Central.now();
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
-						if (now - status.getStartTime() >= 3600000 * 2) {
-							continue;
-						}
+						//if (now - status.getStartTime() >= 3600000 * 2) {
+						//	continue;
+						//}
 
 						// save job id
 						String job_id = status.getJobID().toString();
