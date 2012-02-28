@@ -80,7 +80,6 @@ public class HadoopClient {
 		public String query;
 		public String job_id;
 		public long access;
-		public long start_time;
 		public JobStatus status;
 
 		/**
@@ -95,13 +94,12 @@ public class HadoopClient {
 		 * 		the job id
 		 */
 		public QueryInfo(String user, String query_id, String query,
-				String job_id, long start_time) {
+				String job_id) {
 			this.user = user;
 			this.query_id = query_id;
 			this.query = query.replace("\n", " ").replace("\r", " ")
 					.replace("\"", "'").replace("\t", " ");
 			this.job_id = job_id;
-			this.start_time = start_time;
 		}
 
 		/**
@@ -154,7 +152,7 @@ public class HadoopClient {
 							info = new QueryInfo(user == null ? "" : user, //
 									query_id == null ? "" : query_id, //
 									query == null ? "" : query, //
-									job_id, status.getStartTime());
+									job_id);
 
 							info.access = now;
 							HadoopClient.JOB_CACHE.putIfAbsent(job_id, info);
@@ -209,7 +207,8 @@ public class HadoopClient {
 						QueryInfo info = query_info_entry.getValue();
 						if (info == null
 								|| now - info.access >= 3600000
-								|| now - info.start_time >= HadoopClient.INVALIDATE_PERIOD) {
+								|| (info.status.getStartTime() > 0 && now
+										- info.status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD)) {
 							user_querys.remove(entry.getKey());
 							HadoopClient.JOB_CACHE.remove(entry.getKey());
 							HadoopClient.LOGGER.info("remove from job cache:"
