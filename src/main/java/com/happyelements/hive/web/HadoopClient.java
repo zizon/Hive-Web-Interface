@@ -141,10 +141,6 @@ public class HadoopClient {
 				long now = Central.now();
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
-						if (now - status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD) {
-							continue;
-						}
-
 						// save job id
 						String job_id = status.getJobID().toString();
 						// update info
@@ -211,7 +207,8 @@ public class HadoopClient {
 							.entrySet()) {
 						empty = false;
 						QueryInfo info = query_info_entry.getValue();
-						if (info == null || now - info.access >= 3600000
+						if (info == null
+								|| now - info.access >= 3600000
 								|| now - info.start_time >= HadoopClient.INVALIDATE_PERIOD) {
 							user_querys.remove(entry.getKey());
 							HadoopClient.JOB_CACHE.remove(entry.getKey());
