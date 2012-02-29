@@ -190,30 +190,50 @@ public class HadoopClient {
 			public void run() {
 				long now = Central.now();
 
+				int before_clean_job_cacha = HadoopClient.JOB_CACHE.size();
+				int before_clean_user_job_cache = HadoopClient.USER_JOB_CACHE
+						.size();
+
 				// clear user jobs
 				for (Entry<String, Map<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
 						.entrySet()) {
 					// optimize cache size
 					boolean empty = true;
 
-					// find eviction
+					// no user cache
 					Map<String, QueryInfo> user_querys = entry.getValue();
+					if (user_querys == null) {
+						HadoopClient.USER_JOB_CACHE.remove(entry.getKey());
+						continue;
+					}
+
+					// find eviction
 					for (Entry<String, QueryInfo> query_info_entry : user_querys
 							.entrySet()) {
 						empty = false;
 						QueryInfo info = query_info_entry.getValue();
-						if (info == null
-								|| now - info.access >= 3600000
+
+						// clean null info
+						if (info == null) {
+							user_querys.remove(query_info_entry.getKey());
+							continue;
+						}
+
+						if (now - info.access >= 3600000
 								|| (info.status.getStartTime() > 0 && now
 										- info.status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD)) {
-							user_querys.remove(entry.getKey());
-							HadoopClient.JOB_CACHE.remove(entry.getKey());
+							// clean expire info from user cache
+							user_querys.remove(query_info_entry.getKey());
+
+							// clean from job cache
+							HadoopClient.JOB_CACHE.remove(info.job_id);
+							HadoopClient.JOB_CACHE.remove(info.query_id);
 							HadoopClient.LOGGER.info("remove from job cache:"
 									+ entry.getValue());
 						}
 					}
 
-					// no entry in map ,remove it
+					// no entry in this user cache ,remove it
 					if (empty) {
 						// it *MAY* help GC
 						HadoopClient.USER_JOB_CACHE.remove(entry.getKey());
@@ -223,8 +243,10 @@ public class HadoopClient {
 				}
 
 				HadoopClient.LOGGER.info("job cache:"
-						+ HadoopClient.JOB_CACHE.size() + " user job cache:"
-						+ HadoopClient.USER_JOB_CACHE.size());
+						+ HadoopClient.JOB_CACHE.size() + " before:"
+						+ before_clean_job_cacha + " user job cache:"
+						+ HadoopClient.USER_JOB_CACHE.size() + " before:"
+						+ before_clean_user_job_cache);
 			}
 		}, 60);
 	}

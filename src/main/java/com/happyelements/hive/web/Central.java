@@ -26,6 +26,7 @@
  */
 package com.happyelements.hive.web;
 
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -52,7 +53,6 @@ public class Central {
 	private static final ScheduledExecutorService TIMER;
 	static {
 		TIMER = Executors.newScheduledThreadPool(1);
-
 		Central.NOW = System.currentTimeMillis();
 		Central.TIMER.scheduleAtFixedRate(new Runnable() {
 			@Override
@@ -77,13 +77,13 @@ public class Central {
 	 * 		the timer
 	 */
 	public static void schedule(final Runnable runnable, long second_rate) {
-		TIMER.scheduleAtFixedRate(new Runnable() {
+		Central.TIMER.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					runnable.run();
 				} catch (Throwable e) {
-					LOGGER.error("timer exception:", e);
+					Central.LOGGER.error("timer exception:", e);
 				}
 			}
 		}, 0, second_rate, TimeUnit.SECONDS);
