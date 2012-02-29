@@ -29,7 +29,6 @@ package com.happyelements.hive.web;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +48,7 @@ public class Authorizer {
 		private static final long serialVersionUID = -5887028771861026254L;
 		private long now = Central.now();
 		{
-			Central.getTimer().scheduleAtFixedRate(new TimerTask() {
+			Central.schedule(new Runnable() {
 				@Override
 				public void run() {
 					now = Central.now();
@@ -60,7 +59,7 @@ public class Authorizer {
 						}
 					}
 				}
-			}, 0, 60000);
+			}, 60);
 		}
 
 		@Override

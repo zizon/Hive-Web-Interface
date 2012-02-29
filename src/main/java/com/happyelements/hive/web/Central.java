@@ -26,10 +26,10 @@
  */
 package com.happyelements.hive.web;
 
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -49,32 +49,17 @@ public class Central {
 
 	private static long NOW;
 
-	private static final Timer TIMER;
+	private static final ScheduledExecutorService TIMER;
 	static {
-		TIMER = new Timer() {
-			@Override
-			public void scheduleAtFixedRate(final TimerTask task, long delay,
-					long period) {
-				super.scheduleAtFixedRate(new TimerTask() {
-					@Override
-					public void run() {
-						try {
-							task.run();
-						} catch (Exception e) {
-							Central.LOGGER.error("timer exception : " + e);
-						}
-					}
-				}, delay, period);
-			}
-		};
-		
+		TIMER = Executors.newScheduledThreadPool(1);
+
 		Central.NOW = System.currentTimeMillis();
-		Central.TIMER.scheduleAtFixedRate(new TimerTask() {
+		Central.TIMER.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				Central.NOW = System.currentTimeMillis();
 			}
-		}, 0, 1000);
+		}, 0, 1, TimeUnit.SECONDS);
 	}
 
 	/**
@@ -91,8 +76,17 @@ public class Central {
 	 * @return
 	 * 		the timer
 	 */
-	public static Timer getTimer() {
-		return Central.TIMER;
+	public static void schedule(final Runnable runnable, long second_rate) {
+		TIMER.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					runnable.run();
+				} catch (Throwable e) {
+					LOGGER.error("timer exception:", e);
+				}
+			}
+		}, 0, second_rate, TimeUnit.SECONDS);
 	}
 
 	/**

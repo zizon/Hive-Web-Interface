@@ -33,8 +33,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
@@ -128,9 +126,8 @@ public class HadoopClient {
 		JOB_CACHE = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
 		USER_JOB_CACHE = new ConcurrentHashMap<String, Map<String, QueryInfo>>();
 
-		Timer timer = Central.getTimer();
 		// schedule user cache update
-		timer.scheduleAtFixedRate(new TimerTask() {
+		Central.schedule(new Runnable() {
 			@Override
 			public void run() {
 				if (HadoopClient.refresh_request_count <= 0) {
@@ -185,10 +182,10 @@ public class HadoopClient {
 					HadoopClient.LOGGER.error("fail to refresh old job", e);
 				}
 			}
-		}, 0, 1000);
+		}, 1);
 
 		// schedule query info cache clean up
-		timer.scheduleAtFixedRate(new TimerTask() {
+		Central.schedule(new Runnable() {
 			@Override
 			public void run() {
 				long now = Central.now();
@@ -229,8 +226,7 @@ public class HadoopClient {
 						+ HadoopClient.JOB_CACHE.size() + " user job cache:"
 						+ HadoopClient.USER_JOB_CACHE.size());
 			}
-		}, 0, 60000);
-
+		}, 60);
 	}
 
 	/**
