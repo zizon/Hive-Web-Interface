@@ -198,7 +198,8 @@ public class HadoopClient {
 						.entrySet()) {
 					QueryInfo info = query_info_entry.getValue();
 					if (info == null) {
-						HadoopClient.JOB_CACHE.remove(query_info_entry.getKey());
+						HadoopClient.JOB_CACHE
+								.remove(query_info_entry.getKey());
 						continue;
 					}
 
@@ -207,7 +208,8 @@ public class HadoopClient {
 							|| (info.status.getStartTime() > 0 && now
 									- info.status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD)) {
 						// clean expire info from user cache
-						HadoopClient.JOB_CACHE.remove(query_info_entry.getKey());
+						HadoopClient.JOB_CACHE
+								.remove(query_info_entry.getKey());
 
 						Map<String, QueryInfo> user_query_info_cache = HadoopClient.USER_JOB_CACHE
 								.get(info.user);
@@ -215,6 +217,9 @@ public class HadoopClient {
 							user_query_info_cache.remove(info.job_id);
 							user_query_info_cache.remove(info.query_id);
 						}
+
+						LOGGER.info("remove job info:" + info.query_id
+								+ " user:" + info.user);
 					}
 				}
 
