@@ -146,7 +146,8 @@ public class HadoopClient {
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
 							String user = conf.get("he.user.name");
-							info = new QueryInfo(user == null ? "" : user, //
+							info = new QueryInfo(user == null ? status
+									.getUsername() : user, //
 									query_id == null ? "" : query_id, //
 									query == null ? "" : query, //
 									job_id);
