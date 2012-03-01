@@ -211,6 +211,7 @@ public class HadoopClient {
 						HadoopClient.JOB_CACHE
 								.remove(query_info_entry.getKey());
 
+						// clean related user job cache
 						Map<String, QueryInfo> user_query_info_cache = HadoopClient.USER_JOB_CACHE
 								.get(info.user);
 						if (user_query_info_cache != null) {
@@ -218,8 +219,13 @@ public class HadoopClient {
 							user_query_info_cache.remove(info.query_id);
 						}
 
-						LOGGER.info("remove job info:" + info.query_id
-								+ " user:" + info.user);
+						// if user query is empty,remove it
+						if (user_query_info_cache.isEmpty()) {
+							HadoopClient.USER_JOB_CACHE.remove(info.user);
+						}
+
+						HadoopClient.LOGGER.info("remove job info:"
+								+ info.query_id + " user:" + info.user);
 					}
 				}
 
