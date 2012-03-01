@@ -111,7 +111,6 @@ public class HadoopClient {
 		}
 	}
 
-	private static int refresh_request_count = 0;
 	private static final JobClient CLIENT;
 	private static final ConcurrentHashMap<String, Map<String, QueryInfo>> USER_JOB_CACHE;
 	private static final ConcurrentHashMap<String, QueryInfo> JOB_CACHE;
@@ -128,11 +127,16 @@ public class HadoopClient {
 
 		// schedule user cache update
 		Central.schedule(new Runnable() {
+			private boolean refreshing = false;
+
 			@Override
 			public void run() {
-				if (HadoopClient.refresh_request_count <= 0) {
+				if (this.refreshing) {
 					return;
+				} else {
+					this.refreshing = true;
 				}
+
 				long now = Central.now();
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
@@ -153,9 +157,10 @@ public class HadoopClient {
 									query_id == null ? "" : query_id, //
 									query == null ? "" : query, //
 									job_id);
-							
+
 							info.access = now;
-							QueryInfo old = HadoopClient.JOB_CACHE.putIfAbsent(job_id, info);
+							QueryInfo old = HadoopClient.JOB_CACHE.putIfAbsent(
+									job_id, info);
 							info = old != null ? old : info;
 						}
 
@@ -179,11 +184,11 @@ public class HadoopClient {
 							user_infos.put(info.query_id, info);
 						}
 					}
-
-					// reset flag
-					HadoopClient.refresh_request_count = 0;
 				} catch (IOException e) {
 					HadoopClient.LOGGER.error("fail to refresh old job", e);
+				} finally {
+					// reset flag
+					this.refreshing = false;
 				}
 			}
 		}, 1);
@@ -247,9 +252,6 @@ public class HadoopClient {
 	 * 		the query info
 	 */
 	public static QueryInfo getQueryInfo(String id) {
-		// trigger refresh
-		HadoopClient.refresh_request_count++;
-
 		QueryInfo info;
 		// lucky case
 		if ((info = HadoopClient.JOB_CACHE.get(id)) != null) {
@@ -302,7 +304,6 @@ public class HadoopClient {
 	 */
 	public static Map<String, QueryInfo> getUserQuerys(String user) {
 		// trigger refresh
-		HadoopClient.refresh_request_count++;
 		return HadoopClient.USER_JOB_CACHE.get(user);
 	}
 
