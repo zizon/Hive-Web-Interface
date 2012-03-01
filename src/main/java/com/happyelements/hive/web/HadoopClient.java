@@ -227,7 +227,6 @@ public class HadoopClient {
 
 							// clean from job cache
 							HadoopClient.JOB_CACHE.remove(info.job_id);
-							HadoopClient.JOB_CACHE.remove(info.query_id);
 							HadoopClient.LOGGER
 									.info("remove from user job cache:" + info);
 						}
