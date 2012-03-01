@@ -146,8 +146,9 @@ public class HadoopClient {
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
 							String user = conf.get("he.user.name");
-							
-							// take care of this,use should be empty string if null
+
+							// take care of this,use should be empty string if
+							// null
 							info = new QueryInfo(user == null ? "" : user, //
 									query_id == null ? "" : query_id, //
 									query == null ? "" : query, //
@@ -216,11 +217,9 @@ public class HadoopClient {
 						// clean related user job cache
 						Map<String, QueryInfo> user_query_info_cache = HadoopClient.USER_JOB_CACHE
 								.get(info.user);
+
 						// if user query is empty,remove it
-						if (user_query_info_cache == null
-								|| user_query_info_cache.isEmpty()) {
-							HadoopClient.USER_JOB_CACHE.remove(info.user);
-						} else {
+						if (user_query_info_cache != null) {
 							user_query_info_cache.remove(info.job_id);
 							user_query_info_cache.remove(info.query_id);
 						}
