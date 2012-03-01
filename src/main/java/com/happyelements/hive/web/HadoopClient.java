@@ -155,7 +155,8 @@ public class HadoopClient {
 									job_id);
 							
 							info.access = now;
-							info = HadoopClient.JOB_CACHE.putIfAbsent(job_id, info);
+							QueryInfo old = HadoopClient.JOB_CACHE.putIfAbsent(job_id, info);
+							info = old != null ? old : info;
 						}
 
 						// update status
