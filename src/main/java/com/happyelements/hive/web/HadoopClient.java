@@ -194,53 +194,27 @@ public class HadoopClient {
 				int before_clean_user_job_cache = HadoopClient.USER_JOB_CACHE
 						.size();
 
-				// clear user jobs
-				for (Entry<String, Map<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
+				for (Entry<String, QueryInfo> query_info_entry : HadoopClient.JOB_CACHE
 						.entrySet()) {
-					// optimize cache size
-					boolean empty = true;
-
-					// no user cache
-					Map<String, QueryInfo> user_querys = entry.getValue();
-					if (user_querys == null) {
-						HadoopClient.USER_JOB_CACHE.remove(entry.getKey());
+					QueryInfo info = query_info_entry.getValue();
+					if (info == null) {
+						HadoopClient.JOB_CACHE.remove(query_info_entry.getKey());
 						continue;
 					}
 
-					// find eviction
-					for (Entry<String, QueryInfo> query_info_entry : user_querys
-							.entrySet()) {
-						empty = false;
-						QueryInfo info = query_info_entry.getValue();
+					// clean expire
+					if (now - info.access >= 3600000
+							|| (info.status.getStartTime() > 0 && now
+									- info.status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD)) {
+						// clean expire info from user cache
+						HadoopClient.JOB_CACHE.remove(query_info_entry.getKey());
 
-						// clean null info
-						if (info == null) {
-							user_querys.remove(query_info_entry.getKey());
-							continue;
+						Map<String, QueryInfo> user_query_info_cache = HadoopClient.USER_JOB_CACHE
+								.get(info.user);
+						if (user_query_info_cache != null) {
+							user_query_info_cache.remove(info.job_id);
+							user_query_info_cache.remove(info.query_id);
 						}
-
-						if (now - info.access >= 3600000
-								|| (info.status.getStartTime() > 0 && now
-										- info.status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD)) {
-							// clean expire info from user cache
-							user_querys.remove(query_info_entry.getKey());
-
-							// clean from job cache
-							HadoopClient.JOB_CACHE.remove(info.job_id);
-							HadoopClient.LOGGER
-									.info("remove from user job cache:" + info);
-						} else {
-							LOGGER.info("now:" + now + " start:"
-									+ info.status.getStartTime());
-						}
-					}
-
-					// no entry in this user cache ,remove it
-					if (empty) {
-						// it *MAY* help GC
-						HadoopClient.USER_JOB_CACHE.remove(entry.getKey());
-						HadoopClient.LOGGER.info("remove from user job cache:"
-								+ entry.getKey());
 					}
 				}
 
