@@ -229,6 +229,9 @@ public class HadoopClient {
 							HadoopClient.JOB_CACHE.remove(info.job_id);
 							HadoopClient.LOGGER
 									.info("remove from user job cache:" + info);
+						} else {
+							LOGGER.info("now:" + now + " start:"
+									+ info.status.getStartTime());
 						}
 					}
 
