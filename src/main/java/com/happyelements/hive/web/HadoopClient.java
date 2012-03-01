@@ -138,6 +138,7 @@ public class HadoopClient {
 				}
 
 				long now = Central.now();
+				HadoopClient.LOGGER.info("triger refresh " + now);
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						// save job id
@@ -161,7 +162,7 @@ public class HadoopClient {
 							info.access = now;
 							QueryInfo old = HadoopClient.JOB_CACHE.putIfAbsent(
 									job_id, info);
-							info = old != null ? old : info;
+							info = old == null ? info : old;
 						}
 
 						// update status
