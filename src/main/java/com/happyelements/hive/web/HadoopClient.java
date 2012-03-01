@@ -153,9 +153,9 @@ public class HadoopClient {
 									query_id == null ? "" : query_id, //
 									query == null ? "" : query, //
 									job_id);
-
+							
 							info.access = now;
-							HadoopClient.JOB_CACHE.putIfAbsent(job_id, info);
+							info = HadoopClient.JOB_CACHE.putIfAbsent(job_id, info);
 						}
 
 						// update status
