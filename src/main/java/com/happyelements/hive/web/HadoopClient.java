@@ -112,7 +112,7 @@ public class HadoopClient {
 	}
 
 	private static final JobClient CLIENT;
-	private static final ConcurrentHashMap<String, Map<String, QueryInfo>> USER_JOB_CACHE;
+	private static final ConcurrentHashMap<String, ConcurrentHashMap<String, QueryInfo>> USER_JOB_CACHE;
 	private static final ConcurrentHashMap<String, QueryInfo> JOB_CACHE;
 	static {
 		try {
@@ -123,7 +123,7 @@ public class HadoopClient {
 
 		// create user job cache
 		JOB_CACHE = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
-		USER_JOB_CACHE = new ConcurrentHashMap<String, Map<String, QueryInfo>>();
+		USER_JOB_CACHE = new ConcurrentHashMap<String, ConcurrentHashMap<String, QueryInfo>>();
 
 		// schedule user cache update
 		Central.schedule(new Runnable() {
@@ -148,7 +148,7 @@ public class HadoopClient {
 							LOGGER.info("touch start time:" + start_time);
 							continue;
 						}
-						
+
 						// save job id
 						String job_id = status.getJobID().toString();
 						// update info
@@ -180,11 +180,11 @@ public class HadoopClient {
 						// will be empty
 						if (!info.user.isEmpty()) {
 							// find user cache
-							Map<String, QueryInfo> user_infos = HadoopClient.USER_JOB_CACHE
+							ConcurrentHashMap<String, HadoopClient.QueryInfo> user_infos = HadoopClient.USER_JOB_CACHE
 									.get(info.user);
 							if (user_infos == null) {
 								user_infos = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
-								Map<String, QueryInfo> old = HadoopClient.USER_JOB_CACHE
+								ConcurrentHashMap<String, QueryInfo> old = HadoopClient.USER_JOB_CACHE
 										.putIfAbsent(info.user, user_infos);
 								user_infos = old == null ? user_infos : old;
 							}
@@ -246,7 +246,7 @@ public class HadoopClient {
 				}
 
 				// remove empty user cache
-				for (Entry<String, Map<String, QueryInfo>> user_query_cache_entry : USER_JOB_CACHE
+				for (Entry<String, ConcurrentHashMap<String, QueryInfo>> user_query_cache_entry : USER_JOB_CACHE
 						.entrySet()) {
 					if (user_query_cache_entry.getValue().isEmpty()) {
 						USER_JOB_CACHE.remove(user_query_cache_entry.getKey());
@@ -277,7 +277,7 @@ public class HadoopClient {
 		}
 
 		// may be a query id loop it
-		for (Entry<String, Map<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
+		for (Entry<String, ConcurrentHashMap<String, QueryInfo>> entry : HadoopClient.USER_JOB_CACHE
 				.entrySet()) {
 			// find match
 			if ((info = entry.getValue().get(id)) != null) {

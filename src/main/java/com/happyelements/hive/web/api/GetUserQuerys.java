@@ -47,21 +47,6 @@ import com.happyelements.hive.web.HadoopClient.QueryInfo;
  */
 public class GetUserQuerys extends HTTPHandler {
 
-	protected static class CompositeJobStatus extends JobStatus {
-		public final String query_id;
-		public final String query;
-
-		public CompositeJobStatus(JobStatus status, String query_id,
-				String query) {
-			super(status.getJobID(), status.setupProgress(), status
-					.mapProgress(), status.reduceProgress(), status
-					.cleanupProgress(), status.getRunState(), status
-					.getJobPriority());
-			this.query_id = query_id;
-			this.query = query;
-		}
-	}
-
 	/**
 	 * {@inheritDoc}}
 	 */
@@ -128,13 +113,14 @@ public class GetUserQuerys extends HTTPHandler {
 								+ job.mapProgress() + ",\"reduce\":"
 								+ job.reduceProgress());
 						break;
-					case JobStatus.PREP:
-						builder.append("\"status\":\"PREP\",\"map\":"
+					case JobStatus.SUCCEEDED:
+						builder.append("\"status\":\"SUCCEEDED\",\"map\":"
 								+ job.mapProgress() + ",\"reduce\":"
 								+ job.reduceProgress());
 						break;
-					case JobStatus.SUCCEEDED:
-						builder.append("\"status\":\"SUCCEEDED\",\"map\":"
+					case JobStatus.PREP:
+					default:
+						builder.append("\"status\":\"PREP\",\"map\":"
 								+ job.mapProgress() + ",\"reduce\":"
 								+ job.reduceProgress());
 						break;
