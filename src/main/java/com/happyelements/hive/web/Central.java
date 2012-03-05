@@ -26,11 +26,10 @@
  */
 package com.happyelements.hive.web;
 
-import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -46,7 +45,7 @@ public class Central {
 
 	private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(
 			0, Integer.MAX_VALUE, 10L, TimeUnit.SECONDS,
-			new LinkedBlockingQueue<Runnable>());
+			new SynchronousQueue<Runnable>(false));
 
 	private static long NOW;
 

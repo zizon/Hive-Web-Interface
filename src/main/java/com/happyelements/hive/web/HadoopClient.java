@@ -141,6 +141,13 @@ public class HadoopClient {
 				HadoopClient.LOGGER.info("triger refresh " + now);
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
+						// ignore old guys
+						long start_time = status.getStartTime();
+						if (start_time > 0
+								&& now - start_time >= INVALIDATE_PERIOD) {
+							continue;
+						}
+						
 						// save job id
 						String job_id = status.getJobID().toString();
 						// update info
@@ -180,6 +187,7 @@ public class HadoopClient {
 										.putIfAbsent(info.user, user_infos);
 								user_infos = old == null ? user_infos : old;
 							}
+
 							// replicate it
 							user_infos.put(info.job_id, info);
 							user_infos.put(info.query_id, info);
@@ -233,6 +241,14 @@ public class HadoopClient {
 
 						HadoopClient.LOGGER.info("remove job info:"
 								+ info.query_id + " user:" + info.user);
+					}
+				}
+
+				// remove empty user cache
+				for (Entry<String, Map<String, QueryInfo>> user_query_cache_entry : USER_JOB_CACHE
+						.entrySet()) {
+					if (user_query_cache_entry.getValue().isEmpty()) {
+						USER_JOB_CACHE.remove(user_query_cache_entry.getKey());
 					}
 				}
 
