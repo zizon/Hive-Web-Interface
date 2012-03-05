@@ -145,6 +145,7 @@ public class HadoopClient {
 						long start_time = status.getStartTime();
 						if (start_time > 0
 								&& now - start_time >= INVALIDATE_PERIOD) {
+							LOGGER.info("touch start time:" + start_time);
 							continue;
 						}
 						
