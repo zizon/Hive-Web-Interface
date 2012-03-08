@@ -349,7 +349,7 @@ public class HadoopClient {
 	 */
 	public static void asyncSubmitQuery(final String query,
 			final HiveConf conf, final File out_file, final JobPriority priority) {
-		Central.getThreadPool().submit(new Runnable() {
+		Central.getThreadPool().execute(new Runnable() {
 			@Override
 			public void run() {
 				conf.setEnum("mapred.job.priority", priority != null ? priority
