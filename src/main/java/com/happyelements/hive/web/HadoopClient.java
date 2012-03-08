@@ -127,8 +127,16 @@ public class HadoopClient {
 
 		// schedule user cache update
 		Central.schedule(new Runnable() {
+			private boolean refreshing = false;
+
 			@Override
 			public void run() {
+				if (this.refreshing) {
+					return;
+				} else {
+					this.refreshing = true;
+				}
+
 				long now = Central.now();
 				HadoopClient.LOGGER.info("triger refresh " + now);
 				try {
@@ -157,6 +165,10 @@ public class HadoopClient {
 									query_id == null ? "" : query_id, //
 									query == null ? "" : query, //
 									job_id);
+
+							if (user != null) {
+								LOGGER.info("new query info of user:" + user);
+							}
 
 							info.access = now;
 							QueryInfo old = HadoopClient.JOB_CACHE.putIfAbsent(
@@ -187,9 +199,13 @@ public class HadoopClient {
 							HadoopClient.LOGGER.info("put query info to cache:"
 									+ info);
 						}
+
 					}
 				} catch (IOException e) {
 					HadoopClient.LOGGER.error("fail to refresh old job", e);
+				} finally {
+					// reset flag
+					this.refreshing = false;
 				}
 			}
 		}, 1);
