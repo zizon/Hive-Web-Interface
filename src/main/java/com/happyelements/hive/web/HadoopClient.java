@@ -127,16 +127,8 @@ public class HadoopClient {
 
 		// schedule user cache update
 		Central.schedule(new Runnable() {
-			private boolean refreshing = false;
-
 			@Override
 			public void run() {
-				if (this.refreshing) {
-					return;
-				} else {
-					this.refreshing = true;
-				}
-
 				long now = Central.now();
 				HadoopClient.LOGGER.info("triger refresh " + now);
 				try {
@@ -144,7 +136,7 @@ public class HadoopClient {
 						// ignore old guys
 						long start_time = status.getStartTime();
 						if (start_time > 0
-								&& now - start_time >= INVALIDATE_PERIOD) {
+								&& now - start_time >= HadoopClient.INVALIDATE_PERIOD) {
 							continue;
 						}
 
@@ -191,13 +183,13 @@ public class HadoopClient {
 							// replicate it
 							user_infos.put(info.job_id, info);
 							user_infos.put(info.query_id, info);
+
+							HadoopClient.LOGGER.info("put query info to cache:"
+									+ info);
 						}
 					}
 				} catch (IOException e) {
 					HadoopClient.LOGGER.error("fail to refresh old job", e);
-				} finally {
-					// reset flag
-					this.refreshing = false;
 				}
 			}
 		}, 1);
@@ -245,10 +237,11 @@ public class HadoopClient {
 				}
 
 				// remove empty user cache
-				for (Entry<String, ConcurrentHashMap<String, QueryInfo>> user_query_cache_entry : USER_JOB_CACHE
+				for (Entry<String, ConcurrentHashMap<String, QueryInfo>> user_query_cache_entry : HadoopClient.USER_JOB_CACHE
 						.entrySet()) {
 					if (user_query_cache_entry.getValue().isEmpty()) {
-						USER_JOB_CACHE.remove(user_query_cache_entry.getKey());
+						HadoopClient.USER_JOB_CACHE
+								.remove(user_query_cache_entry.getKey());
 					}
 				}
 
