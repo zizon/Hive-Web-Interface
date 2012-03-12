@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import com.happyelements.hive.web.Authorizer;
@@ -112,7 +113,7 @@ public class PostQuery extends ResultFileHandler {
 		// submit querys
 		String query_id = MD5.digestLiteral(user + query
 				+ System.currentTimeMillis());
-		
+
 		// set up hive
 		final HiveConf conf = new HiveConf(HiveConf.class);
 		conf.set("hadoop.job.ugi", user + ",hive");
@@ -132,8 +133,16 @@ public class PostQuery extends ResultFileHandler {
 										.get(conf, tree);
 								analyzer.analyze(tree, new Context(conf));
 								analyzer.validate();
+
+								if (analyzer instanceof SemanticAnalyzer) {
+									SemanticAnalyzer semantic = (SemanticAnalyzer) analyzer;
+									LOGGER.info("test semantic:"
+											+ analyzer.getFetchTask().getWork()
+													.getPartDir());
+								}
 							} catch (Exception e) {
-								PostQuery.LOGGER.error("fail to parse query", e);
+								PostQuery.LOGGER
+										.error("fail to parse query", e);
 								return false;
 							}
 							return true;
