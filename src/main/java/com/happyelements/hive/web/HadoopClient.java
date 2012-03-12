@@ -141,13 +141,15 @@ public class HadoopClient {
 				HadoopClient.LOGGER.info("triger refresh " + now);
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
+						if (status.getJobPriority() == JobPriority.HIGH) {
+							LOGGER.info("fetch a job:" + status);
+						}
+
 						// ignore old guys
 						long start_time = status.getStartTime();
 						if (start_time > 0
 								&& now - start_time >= HadoopClient.INVALIDATE_PERIOD) {
-							if (status.getJobPriority() == JobPriority.HIGH) {
-								LOGGER.info("ignoring job:" + status);
-							}
+
 							continue;
 						}
 
