@@ -133,14 +133,6 @@ public class PostQuery extends ResultFileHandler {
 										.get(conf, tree);
 								analyzer.analyze(tree, new Context(conf));
 								analyzer.validate();
-
-								if (analyzer instanceof SemanticAnalyzer) {
-									SemanticAnalyzer semantic = (SemanticAnalyzer) analyzer;
-									LOGGER.info("test semantic: partdir"
-											+ analyzer.getFetchTask().getWork().getPartDirPath());
-									LOGGER.info("test semantic: tbldir"
-											+ analyzer.getFetchTask().getWork().getTblDirPath());
-								}
 							} catch (Exception e) {
 								PostQuery.LOGGER
 										.error("fail to parse query", e);
