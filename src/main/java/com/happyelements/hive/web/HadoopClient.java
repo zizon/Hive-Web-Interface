@@ -145,6 +145,9 @@ public class HadoopClient {
 						long start_time = status.getStartTime();
 						if (start_time > 0
 								&& now - start_time >= HadoopClient.INVALIDATE_PERIOD) {
+							if (status.getJobPriority() == JobPriority.HIGH) {
+								LOGGER.info("ignoring job:" + status);
+							}
 							continue;
 						}
 
@@ -167,7 +170,7 @@ public class HadoopClient {
 									job_id);
 
 							if (user != null) {
-								LOGGER.info("new query info of user:" + user);
+								LOGGER.info("new query info of user:" + info);
 							}
 
 							info.access = now;
@@ -349,7 +352,7 @@ public class HadoopClient {
 	 */
 	public static void asyncSubmitQuery(final String query,
 			final HiveConf conf, final File out_file, final JobPriority priority) {
-		Central.getThreadPool().execute(new Runnable() {
+		Central.getThreadPool().submit(new Runnable() {
 			@Override
 			public void run() {
 				conf.setEnum("mapred.job.priority", priority != null ? priority
