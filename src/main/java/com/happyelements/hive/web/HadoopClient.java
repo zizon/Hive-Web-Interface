@@ -142,7 +142,7 @@ public class HadoopClient {
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						if (status.getJobPriority() == JobPriority.HIGH) {
-							LOGGER.info("fetch a job:" + status);
+							LOGGER.info("fetch a job:" + status.getJobID());
 						}
 
 						// ignore old guys
