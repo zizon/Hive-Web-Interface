@@ -137,8 +137,7 @@ public class PostQuery extends ResultFileHandler {
 								if (analyzer instanceof SemanticAnalyzer) {
 									SemanticAnalyzer semantic = (SemanticAnalyzer) analyzer;
 									LOGGER.info("test semantic:"
-											+ analyzer.getFetchTask().getWork()
-													.getPartDir());
+											+ analyzer.getOutputs());
 								}
 							} catch (Exception e) {
 								PostQuery.LOGGER
