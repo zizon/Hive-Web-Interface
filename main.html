@@ -33,23 +33,18 @@
 						}
 					};
 					element.parentNode.insertBefore(tag,element);
-
 				}
 			}
 		}
-		
-		loader.async("/jquery-1.7.1.min.js")
-		loader.async("/hwi.js")
+			
+		loader.async("/jquery-1.7.1.min.js");
+		loader.async("/hwi.js");
 
 		loader.complete(function(){
 			hwi.attatch();	
 			$("body").show();
 		});
-
-		loader.async(('https:' == document.location.protocol ? 'https://ssl' : 'http://www')+ '.google-analytics.com/ga.js');
-		loader.complete();
 	}
-
 </script>
 </head>
 <body style="display:none">
@@ -122,5 +117,6 @@
 			</table>
 		</div>
 	</div>
+	<script type="text/javascript" async="true" src="https://www.google-analytics.com/ga.js"></script> 
 </body>
 </html>
