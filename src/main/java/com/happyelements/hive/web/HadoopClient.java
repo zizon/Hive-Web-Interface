@@ -180,7 +180,8 @@ public class HadoopClient {
 									job_id);
 
 							if (user != null) {
-								HadoopClient.LOGGER.info("new query info of user:" + info);
+								HadoopClient.LOGGER
+										.info("new query info of user:" + info);
 							}
 
 							info.access = Central.now();
@@ -210,11 +211,15 @@ public class HadoopClient {
 							user_infos.put(info.query_id, info);
 
 							// force back
-							HadoopClient.USER_JOB_CACHE.put(info.user, user_infos);
+							HadoopClient.USER_JOB_CACHE.put(info.user,
+									user_infos);
 							HadoopClient.LOGGER.info("put query info to cache:"
 									+ info);
 						}
 
+						HadoopClient.LOGGER
+								.info("fetch a job leave:" + status.getJobID()
+										+ " info.user:" + info.user);
 					}
 				} catch (IOException e) {
 					HadoopClient.LOGGER.error("fail to refresh old job", e);
@@ -439,7 +444,8 @@ public class HadoopClient {
 
 									// tricky patch
 									if (!contain_map_redcue) {
-										HadoopClient.LOGGER.info("not a map reduce query");
+										HadoopClient.LOGGER
+												.info("not a map reduce query");
 
 										// make a query info
 										QueryInfo info = new QueryInfo(conf
