@@ -437,14 +437,23 @@ public class HadoopClient {
 									// tricky patch
 									if (!contain_map_redcue) {
 										LOGGER.info("not a map reduce query");
+										
+										// make a query info
 										QueryInfo info = new QueryInfo(conf
 												.get("he.user.name", ""), conf
 												.get("rest.query.id", ""), conf
 												.get("he.query.string", ""), "");
+										
+										// make a fake status
 										info.status = new JobStatus(JobID
 												.forName(""), 1.0f, 1.0f, 1.0f,
 												1.0f, JobStatus.SUCCEEDED,
 												JobPriority.HIGH);
+										
+										// update time
+										info.access = Central.now();
+										
+										// attatch
 										ConcurrentHashMap<String, QueryInfo> user_querys = USER_JOB_CACHE
 												.get(conf.get("he.user.name"));
 										if (user_querys == null) {
