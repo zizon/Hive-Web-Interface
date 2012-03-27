@@ -47,18 +47,9 @@ public class Central {
 			0, Integer.MAX_VALUE, 10L, TimeUnit.SECONDS,
 			new SynchronousQueue<Runnable>(false));
 
-	private static long NOW;
-
 	private static final ScheduledExecutorService TIMER;
 	static {
 		TIMER = Executors.newScheduledThreadPool(1);
-		Central.NOW = System.currentTimeMillis();
-		Central.TIMER.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				Central.NOW = System.currentTimeMillis();
-			}
-		}, 0, 1, TimeUnit.SECONDS);
 	}
 
 	/**
@@ -94,6 +85,6 @@ public class Central {
 	 * 		the now time(not much precise)
 	 */
 	public static long now() {
-		return Central.NOW;
+		return System.currentTimeMillis();
 	}
 }
