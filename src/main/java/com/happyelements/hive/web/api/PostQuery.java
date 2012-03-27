@@ -119,6 +119,7 @@ public class PostQuery extends ResultFileHandler {
 		conf.set("hadoop.job.ugi", user + ",hive");
 		conf.set("he.user.name", user);
 		conf.set("rest.query.id", query_id);
+		conf.set("he.query.string", query);
 		try {
 			Boolean parsed = Central.getThreadPool()
 					.submit(new Callable<Boolean>() {

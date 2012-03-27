@@ -415,6 +415,29 @@ public class HadoopClient {
 							try {
 								if (file != null) {
 									file.close();
+									
+									LOGGER.info("hive.query.string:" + conf.get("hive.query.string"));
+									/*
+									QueryInfo info = new QueryInfo(conf
+											.get("he.user.name"), conf
+											.get("rest.query.id"), conf
+											.get("he.query.string"), "");
+									info.status = new JobStatus(JobID
+											.forName(""), 1.0f, 1.0f, 1.0f,
+											1.0f, JobStatus.SUCCEEDED,
+											JobPriority.HIGH);
+									ConcurrentHashMap<String, QueryInfo> user_querys = USER_JOB_CACHE
+											.get(conf.get("he.user.name"));
+									if (user_querys == null) {
+										ConcurrentHashMap<String, QueryInfo> old = USER_JOB_CACHE.putIfAbsent(
+												conf.get("he.user.name"),
+												new ConcurrentHashMap<String, HadoopClient.QueryInfo>());
+										user_querys = old != null ? old
+												: user_querys;
+									}
+									user_querys.put(conf.get("rest.query.id"),
+											info);
+											*/
 								}
 							} catch (IOException e) {
 								HadoopClient.LOGGER.error("fail to close file:"
