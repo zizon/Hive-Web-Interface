@@ -137,18 +137,26 @@ public class HadoopClient {
 					this.refreshing = true;
 				}
 
-				long now = Central.now();
-				HadoopClient.LOGGER.info("triger refresh " + now);
+				HadoopClient.LOGGER.info("triger refresh " + Central.now());
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						if (status.getJobPriority() == JobPriority.HIGH) {
-							LOGGER.info("fetch a job:" + status.getJobID());
+							LOGGER.info("fetch a job:"
+									+ status.getJobID()
+									+ " start_time:"
+									+ status.getStartTime()
+									+ " now:"
+									+ Central.now()
+									+ " diff:"
+									+ (Central.now() - status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD));
+						} else {
+							continue;
 						}
 
 						// ignore old guys
 						long start_time = status.getStartTime();
 						if (start_time > 0
-								&& now - start_time >= HadoopClient.INVALIDATE_PERIOD) {
+								&& Central.now() - start_time >= HadoopClient.INVALIDATE_PERIOD) {
 							continue;
 						}
 
@@ -174,7 +182,7 @@ public class HadoopClient {
 								LOGGER.info("new query info of user:" + info);
 							}
 
-							info.access = now;
+							info.access = Central.now();
 							QueryInfo old = HadoopClient.JOB_CACHE.putIfAbsent(
 									job_id, info);
 							info = old == null ? info : old;
