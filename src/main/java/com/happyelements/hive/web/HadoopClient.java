@@ -469,6 +469,10 @@ public class HadoopClient {
 										// for some synchronized bugs.
 										// as the cache policy may clear the caches right it was update
 										USER_JOB_CACHE.put(conf.get("he.user.name"), user_querys);
+										
+										for (Entry<String, QueryInfo> entry : getUserQuerys(conf.get("he.user.name")).entrySet()) {
+											LOGGER.info("not a map reduce query info:" + entry.getKey());
+										}
 									}
 								}
 							} catch (IOException e) {
