@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.Constants;
@@ -423,9 +424,18 @@ public class HadoopClient {
 							try {
 								if (file != null) {
 									file.close();
-									LOGGER.info("mapreduce.job.dir:"
-											+ conf.get("mapreduce.job.dir"));
-									if (conf.get("mapreduce.job.dir") == null) {
+						
+									// try to patch that not generate map reduce job
+									boolean contain_map_redcue = false;
+									for (Task<?> task : driver.getPlan()
+											.getRootTasks()) {
+										if (task.isMapRedTask()) {
+											contain_map_redcue = true;
+										}
+									}
+
+									// tricky patch
+									if (!contain_map_redcue) {
 										QueryInfo info = new QueryInfo(conf
 												.get("he.user.name", ""), conf
 												.get("rest.query.id", ""), conf
