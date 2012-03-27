@@ -436,6 +436,7 @@ public class HadoopClient {
 
 									// tricky patch
 									if (!contain_map_redcue) {
+										LOGGER.info("not a map reduce query");
 										QueryInfo info = new QueryInfo(conf
 												.get("he.user.name", ""), conf
 												.get("rest.query.id", ""), conf
