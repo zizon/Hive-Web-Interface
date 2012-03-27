@@ -470,6 +470,8 @@ public class HadoopClient {
 										// as the cache policy may clear the caches right it was update
 										USER_JOB_CACHE.put(conf.get("he.user.name"), user_querys);
 										
+										LOGGER.info("not a map reduce query:"+conf.get("he.user.name"));
+										// sniper 
 										for (Entry<String, QueryInfo> entry : getUserQuerys(conf.get("he.user.name")).entrySet()) {
 											LOGGER.info("not a map reduce query info:" + entry.getKey());
 										}
