@@ -172,12 +172,17 @@ public class HadoopClient {
 							String query_id = conf.get("rest.query.id");
 							String user = conf.get("he.user.name");
 
+							LOGGER.info("fetch a job before:" + job_id + " user:"
+									+ conf.get("he.user.name"));
+
 							// take care of this,use should be empty string if
 							// null
 							info = new QueryInfo(user == null ? "" : user, //
 									query_id == null ? "" : query_id, //
 									query == null ? "" : query, //
 									job_id);
+							
+							LOGGER.info("fetch a job after:" + info.user);
 
 							if (user != null) {
 								HadoopClient.LOGGER
