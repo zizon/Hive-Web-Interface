@@ -37,9 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
@@ -174,19 +171,6 @@ public class HadoopClient {
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
 							String user = conf.get("he.user.name");
-
-							// check if the history file is deleted
-							if (user == null) {
-								FileSystem fs = FileSystem.get(conf);
-								conf.addResource(fs.open(new Path(
-										conf.get("mapreduce.jobtracker.staging.root.dir"),
-										"hadoop/.staging/" + job_id)));
-								// try load again
-								query = conf.get("hive.query.string");
-								query_id = conf.get("rest.query.id");
-								user = conf.get("he.user.name");
-								fs.close();
-							}
 
 							// take care of this,use should be empty string if
 							// null
