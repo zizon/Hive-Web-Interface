@@ -465,6 +465,10 @@ public class HadoopClient {
 										}
 										user_querys.put(
 												conf.get("rest.query.id"), info);
+										
+										// for some synchronized bugs.
+										// as the cache policy may clear the caches right it was update
+										USER_JOB_CACHE.put(conf.get("he.user.name"), user_querys);
 									}
 								}
 							} catch (IOException e) {
