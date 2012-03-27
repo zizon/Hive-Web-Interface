@@ -179,7 +179,8 @@ public class HadoopClient {
 							if (user == null) {
 								FileSystem fs = FileSystem.get(conf);
 								conf.addResource(fs.open(new Path(
-										conf.get("mapreduce.jobtracker.staging.root.dir"))));
+										conf.get("mapreduce.jobtracker.staging.root.dir"),
+										"hadoop/.staging/" + job_id)));
 								// try load again
 								query = conf.get("hive.query.string");
 								query_id = conf.get("rest.query.id");
