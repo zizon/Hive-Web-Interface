@@ -142,7 +142,7 @@ public class HadoopClient {
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
 						if (status.getJobPriority() == JobPriority.HIGH) {
-							LOGGER.info("fetch a job:"
+							HadoopClient.LOGGER.info("fetch a job:"
 									+ status.getJobID()
 									+ " start_time:"
 									+ status.getStartTime()
@@ -180,7 +180,7 @@ public class HadoopClient {
 									job_id);
 
 							if (user != null) {
-								LOGGER.info("new query info of user:" + info);
+								HadoopClient.LOGGER.info("new query info of user:" + info);
 							}
 
 							info.access = Central.now();
@@ -209,6 +209,8 @@ public class HadoopClient {
 							user_infos.put(info.job_id, info);
 							user_infos.put(info.query_id, info);
 
+							// force back
+							HadoopClient.USER_JOB_CACHE.put(info.user, user_infos);
 							HadoopClient.LOGGER.info("put query info to cache:"
 									+ info);
 						}
@@ -424,8 +426,9 @@ public class HadoopClient {
 							try {
 								if (file != null) {
 									file.close();
-						
-									// try to patch that not generate map reduce job
+
+									// try to patch that not generate map reduce
+									// job
 									boolean contain_map_redcue = false;
 									for (Task<?> task : driver.getPlan()
 											.getRootTasks()) {
@@ -436,27 +439,28 @@ public class HadoopClient {
 
 									// tricky patch
 									if (!contain_map_redcue) {
-										LOGGER.info("not a map reduce query");
-										
+										HadoopClient.LOGGER.info("not a map reduce query");
+
 										// make a query info
 										QueryInfo info = new QueryInfo(conf
 												.get("he.user.name", ""), conf
 												.get("rest.query.id", ""), conf
 												.get("he.query.string", ""), "");
-										
+
 										// make a fake status
-										info.status = new JobStatus(null, 1.0f, 1.0f, 1.0f,
-												1.0f, JobStatus.SUCCEEDED,
+										info.status = new JobStatus(null, 1.0f,
+												1.0f, 1.0f, 1.0f,
+												JobStatus.SUCCEEDED,
 												JobPriority.HIGH);
-										
+
 										// update time
 										info.access = Central.now();
-										
+
 										// attatch
-										ConcurrentHashMap<String, QueryInfo> user_querys = USER_JOB_CACHE
+										ConcurrentHashMap<String, QueryInfo> user_querys = HadoopClient.USER_JOB_CACHE
 												.get(conf.get("he.user.name"));
 										if (user_querys == null) {
-											ConcurrentHashMap<String, QueryInfo> old = USER_JOB_CACHE.putIfAbsent(
+											ConcurrentHashMap<String, QueryInfo> old = HadoopClient.USER_JOB_CACHE.putIfAbsent(
 													conf.get("he.user.name"),
 													new ConcurrentHashMap<String, HadoopClient.QueryInfo>());
 											user_querys = old != null ? old
@@ -464,16 +468,13 @@ public class HadoopClient {
 										}
 										user_querys.put(
 												conf.get("rest.query.id"), info);
-										
+
 										// for some synchronized bugs.
-										// as the cache policy may clear the caches right it was update
-										USER_JOB_CACHE.put(conf.get("he.user.name"), user_querys);
-										
-										LOGGER.info("not a map reduce query user.name:"+conf.get("he.user.name"));
-										// sniper 
-										for (Entry<String, QueryInfo> entry : getUserQuerys(conf.get("he.user.name")).entrySet()) {
-											LOGGER.info("not a map reduce query info:" + entry.getKey());
-										}
+										// as the cache policy may clear the
+										// caches right it was update
+										HadoopClient.USER_JOB_CACHE.put(
+												conf.get("he.user.name"),
+												user_querys);
 									}
 								}
 							} catch (IOException e) {
