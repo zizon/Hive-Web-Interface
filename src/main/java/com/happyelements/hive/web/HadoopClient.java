@@ -178,9 +178,8 @@ public class HadoopClient {
 							// check if the history file is deleted
 							if (user == null) {
 								FileSystem fs = FileSystem.get(conf);
-								conf.addResource(fs
-										.open(new Path(
-												"mapreduce.jobtracker.staging.root.dir")));
+								conf.addResource(fs.open(new Path(
+										conf.get("mapreduce.jobtracker.staging.root.dir"))));
 								// try load again
 								query = conf.get("hive.query.string");
 								query_id = conf.get("rest.query.id");
