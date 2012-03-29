@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobHistory;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobPriority;
 import org.apache.hadoop.mapred.JobStatus;
@@ -171,6 +172,13 @@ public class HadoopClient {
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
 							String user = conf.get("he.user.name");
+							
+							// rude fix
+							// there is a gap when jobtracker report that a job is there,but fail for this 
+							// to resolve jobconf
+							if (user == null || query == null || query_id == null) {
+								continue;
+							}
 
 							// take care of this,use should be empty string if
 							// null
