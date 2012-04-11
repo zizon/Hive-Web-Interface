@@ -475,7 +475,7 @@ public class HadoopClient {
 										if (user_querys == null) {
 											ConcurrentHashMap<String, QueryInfo> old = HadoopClient.USER_JOB_CACHE.putIfAbsent(
 													conf.get("he.user.name"),
-													new ConcurrentHashMap<String, HadoopClient.QueryInfo>());
+													user_querys = new ConcurrentHashMap<String, HadoopClient.QueryInfo>());
 											user_querys = old != null ? old
 													: user_querys;
 										}
