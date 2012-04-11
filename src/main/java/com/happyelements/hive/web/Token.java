@@ -26,6 +26,8 @@
  */
 package com.happyelements.hive.web;
 
+import org.mortbay.util.ajax.ContinuationSupport;
+
 /**
  * tricky way to protect internal submit
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>

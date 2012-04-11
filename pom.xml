@@ -4,7 +4,7 @@
 
 	<groupId>com.happyelements</groupId>
 	<artifactId>hive.web</artifactId>
-	<version>1.6.10.4-SNAPSHOT</version>
+	<version>1.6.11-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>hive.web</name>
@@ -50,7 +50,7 @@
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-core</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.2</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -74,12 +74,6 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.18</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hbase</groupId>
-			<artifactId>hbase</artifactId>
-			<version>0.90.4</version>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

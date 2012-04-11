@@ -27,6 +27,7 @@
 package com.happyelements.hive.web.api;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
@@ -56,7 +57,9 @@ public class ListAllJobs extends HTTPHandler {
 	@Override
 	protected void handle(HttpServletRequest request,
 			HttpServletResponse response) throws IOException, ServletException {
-		for (Entry<String, QueryInfo> entry : HadoopClient.getAllQuerys()
+		String user = request.getParameter("user");
+		for (Entry<String, QueryInfo> entry : user == null ? HadoopClient
+				.getUserQuerys(user).entrySet() : HadoopClient.getAllQuerys()
 				.entrySet()) {
 			response.getWriter().println(entry.toString());
 		}

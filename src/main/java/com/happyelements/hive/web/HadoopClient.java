@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobHistory;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobPriority;
 import org.apache.hadoop.mapred.JobStatus;
@@ -172,11 +171,13 @@ public class HadoopClient {
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
 							String user = conf.get("he.user.name");
-							
+
 							// rude fix
-							// there is a gap when jobtracker report that a job is there,but fail for this 
+							// there is a gap when jobtracker report that a job
+							// is there,but fail for this
 							// to resolve jobconf
-							if (user == null || query == null || query_id == null) {
+							if (user == null || query == null
+									|| query_id == null) {
 								continue;
 							}
 
@@ -187,14 +188,8 @@ public class HadoopClient {
 									query == null ? "" : query, //
 									job_id);
 
-							if (user != null) {
-								HadoopClient.LOGGER
-										.info("new query info of user:" + info);
-							} else {
-								LOGGER.info("user is null, query:" + query
-										+ " query_id" + query_id + " user:"
-										+ user);
-							}
+							HadoopClient.LOGGER.info("new query info of user:"
+									+ info);
 
 							info.access = Central.now();
 							QueryInfo old = HadoopClient.JOB_CACHE.putIfAbsent(
@@ -456,8 +451,8 @@ public class HadoopClient {
 
 									// tricky patch
 									if (!contain_map_redcue) {
-										HadoopClient.LOGGER
-												.info("not a map reduce query");
+										HadoopClient.LOGGER.info("not a map reduce query:"
+												+ conf.get("rest.query.id"));
 
 										// make a query info
 										QueryInfo info = new QueryInfo(conf
@@ -474,7 +469,7 @@ public class HadoopClient {
 										// update time
 										info.access = Central.now();
 
-										// attatch
+										// attach
 										ConcurrentHashMap<String, QueryInfo> user_querys = HadoopClient.USER_JOB_CACHE
 												.get(conf.get("he.user.name"));
 										if (user_querys == null) {
