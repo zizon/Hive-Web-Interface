@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.mortbay.util.IO;
 
-import com.happyelements.hive.web.Authorizer;
+import com.happyelements.hive.web.authorizer.Authorizer;
 
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>

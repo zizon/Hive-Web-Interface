@@ -43,6 +43,8 @@ import com.happyelements.hive.web.api.InternalSubmit;
 import com.happyelements.hive.web.api.ListAllJobs;
 import com.happyelements.hive.web.api.PostKill;
 import com.happyelements.hive.web.api.PostQuery;
+import com.happyelements.hive.web.authorizer.Authorizer;
+import com.happyelements.hive.web.authorizer.WhiteListAuthorizer;
 
 /**
  * to start a http server
@@ -112,7 +114,8 @@ public class Starter {
 					+ " defualturl:" + args[3]);
 
 			// construct and start server
-			Authorizer authorizer = new Authorizer();
+			Authorizer authorizer = new WhiteListAuthorizer(new File(args[1],
+					"white_list.prop"));
 			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3])
 					.add(new PostQuery(authorizer, "/hwi/submitQuery.jsp",
 							args[1]))

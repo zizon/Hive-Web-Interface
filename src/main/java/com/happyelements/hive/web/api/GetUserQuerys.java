@@ -36,11 +36,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.hadoop.mapred.JobStatus;
 
-import com.happyelements.hive.web.Authorizer;
 import com.happyelements.hive.web.Central;
 import com.happyelements.hive.web.HadoopClient;
 import com.happyelements.hive.web.HTTPServer.HTTPHandler;
 import com.happyelements.hive.web.HadoopClient.QueryInfo;
+import com.happyelements.hive.web.authorizer.Authorizer;
 
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>

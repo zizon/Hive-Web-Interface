@@ -42,10 +42,10 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import com.happyelements.hive.web.Authorizer;
 import com.happyelements.hive.web.Central;
 import com.happyelements.hive.web.HadoopClient;
 import com.happyelements.hive.web.MD5;
+import com.happyelements.hive.web.authorizer.Authorizer;
 
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>

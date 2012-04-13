@@ -29,8 +29,8 @@ package com.happyelements.hive.web.api;
 import java.io.File;
 import java.io.IOException;
 
-import com.happyelements.hive.web.Authorizer;
 import com.happyelements.hive.web.HTTPServer.HTTPHandler;
+import com.happyelements.hive.web.authorizer.Authorizer;
 
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>

@@ -47,6 +47,8 @@ import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.thread.QueuedThreadPool;
 import org.mortbay.util.IO;
 
+import com.happyelements.hive.web.authorizer.Authorizer;
+
 /**
  * a simple http server
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
