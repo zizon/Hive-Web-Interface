@@ -24,67 +24,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+package com.github.hive.web;
 
 /**
- * the central thread pool
+ * tricky way to protect internal submit
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  */
-public class Central {
-	private static final Log LOGGER = LogFactory.getLog(Central.class);
+public enum Token {
+	Secret("18pacnc09131o0unca8w7341");
 
-	private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(
-			0, Integer.MAX_VALUE, 10L, TimeUnit.SECONDS,
-			new SynchronousQueue<Runnable>(false));
+	public final String token;
 
-	private static final ScheduledExecutorService TIMER;
-	static {
-		TIMER = Executors.newScheduledThreadPool(1);
+	Token(String token) {
+		this.token = token;
 	}
 
 	/**
-	 * get the thread pool
+	 * if the test match the secret
+	 * @param test
+	 * 		the test secret
 	 * @return
-	 * 		the thread pool
+	 * 		true if match
 	 */
-	public static ExecutorService getThreadPool() {
-		return Central.THREAD_POOL;
-	}
-
-	/**
-	 * get the timer object
-	 * @return
-	 * 		the timer
-	 */
-	public static void schedule(final Runnable runnable, long second_rate) {
-		Central.TIMER.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					runnable.run();
-				} catch (Throwable e) {
-					Central.LOGGER.error("timer exception:", e);
-				}
-			}
-		}, 0, second_rate, TimeUnit.SECONDS);
-	}
-
-	/**
-	 * get the appropriate now
-	 * @return
-	 * 		the now time(not much precise)
-	 */
-	public static long now() {
-		return System.currentTimeMillis();
+	public boolean match(String test) {
+		return token.equals(test);
 	}
 }

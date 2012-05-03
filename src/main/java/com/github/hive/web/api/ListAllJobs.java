@@ -24,31 +24,44 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web;
+package com.github.hive.web.api;
 
-import org.mortbay.util.ajax.ContinuationSupport;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.github.hive.web.HadoopClient;
+import com.github.hive.web.HTTPServer.HTTPHandler;
+import com.github.hive.web.HadoopClient.QueryInfo;
 
 /**
- * tricky way to protect internal submit
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
+ *
  */
-public enum Token {
-	Secret("18pacnc09131o0unca8w7341");
+public class ListAllJobs extends HTTPHandler {
 
-	public final String token;
-
-	Token(String token) {
-		this.token = token;
+	/**
+	 * @param url
+	 */
+	public ListAllJobs(String url) {
+		super(url);
 	}
 
 	/**
-	 * if the test match the secret
-	 * @param test
-	 * 		the test secret
-	 * @return
-	 * 		true if match
+	 * @see com.github.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	public boolean match(String test) {
-		return token.equals(test);
+	@Override
+	protected void handle(HttpServletRequest request,
+			HttpServletResponse response) throws IOException, ServletException {
+		String user = request.getParameter("user");
+		for (Entry<String, QueryInfo> entry : user == null ? HadoopClient
+				.getUserQuerys(user).entrySet() : HadoopClient.getAllQuerys()
+				.entrySet()) {
+			response.getWriter().println(entry.toString());
+		}
 	}
 }

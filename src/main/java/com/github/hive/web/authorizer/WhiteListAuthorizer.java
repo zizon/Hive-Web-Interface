@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web.authorizer;
+package com.github.hive.web.authorizer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.happyelements.hive.web.Central;
+import com.github.hive.web.Central;
 
 /**
  * white list authorizer
@@ -69,7 +69,7 @@ public class WhiteListAuthorizer extends Authorizer {
 
 	/**
 	 * {@inheritDoc}}
-	 * @see com.happyelements.hive.web.authorizer.Authorizer#auth(javax.servlet.http.HttpServletRequest)
+	 * @see com.github.hive.web.authorizer.Authorizer#auth(javax.servlet.http.HttpServletRequest)
 	 */
 	public boolean auth(HttpServletRequest request) {
 		String user = extractUser(request);

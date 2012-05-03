@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web;
+package com.github.hive.web;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,14 +37,14 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 
-import com.happyelements.hive.web.api.GetQueryResult;
-import com.happyelements.hive.web.api.GetUserQuerys;
-import com.happyelements.hive.web.api.InternalSubmit;
-import com.happyelements.hive.web.api.ListAllJobs;
-import com.happyelements.hive.web.api.PostKill;
-import com.happyelements.hive.web.api.PostQuery;
-import com.happyelements.hive.web.authorizer.Authorizer;
-import com.happyelements.hive.web.authorizer.WhiteListAuthorizer;
+import com.github.hive.web.api.GetQueryResult;
+import com.github.hive.web.api.GetUserQuerys;
+import com.github.hive.web.api.InternalSubmit;
+import com.github.hive.web.api.ListAllJobs;
+import com.github.hive.web.api.PostKill;
+import com.github.hive.web.api.PostQuery;
+import com.github.hive.web.authorizer.Authorizer;
+import com.github.hive.web.authorizer.WhiteListAuthorizer;
 
 /**
  * to start a http server

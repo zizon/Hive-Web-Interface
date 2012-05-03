@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web;
+package com.github.hive.web;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,7 +47,7 @@ import org.mortbay.jetty.nio.SelectChannelConnector;
 import org.mortbay.thread.QueuedThreadPool;
 import org.mortbay.util.IO;
 
-import com.happyelements.hive.web.authorizer.Authorizer;
+import com.github.hive.web.authorizer.Authorizer;
 
 /**
  * a simple http server

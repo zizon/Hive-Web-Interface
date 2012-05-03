@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web.api;
+package com.github.hive.web.api;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -42,10 +42,11 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import com.happyelements.hive.web.Central;
-import com.happyelements.hive.web.HadoopClient;
-import com.happyelements.hive.web.MD5;
-import com.happyelements.hive.web.authorizer.Authorizer;
+
+import com.github.hive.web.Central;
+import com.github.hive.web.HadoopClient;
+import com.github.hive.web.MD5;
+import com.github.hive.web.authorizer.Authorizer;
 
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
@@ -63,7 +64,7 @@ public class PostQuery extends ResultFileHandler {
 	}
 
 	/**
-	 * @see com.happyelements.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 * @see com.github.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response)

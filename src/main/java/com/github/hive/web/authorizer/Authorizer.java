@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web.authorizer;
+package com.github.hive.web.authorizer;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -37,8 +37,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.happyelements.hive.web.Base64;
-import com.happyelements.hive.web.Central;
+import com.github.hive.web.Base64;
+import com.github.hive.web.Central;
 
 /**
  * utility to auth user

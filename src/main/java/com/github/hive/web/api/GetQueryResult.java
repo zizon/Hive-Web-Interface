@@ -24,61 +24,53 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web.api;
+package com.github.hive.web.api;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.mapred.JobID;
-import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hadoop.mapred.RunningJob;
+import org.mortbay.util.IO;
 
-import com.happyelements.hive.web.HadoopClient;
-import com.happyelements.hive.web.HTTPServer.HTTPHandler;
-import com.happyelements.hive.web.HadoopClient.QueryInfo;
-import com.happyelements.hive.web.authorizer.Authorizer;
+import com.github.hive.web.authorizer.Authorizer;
 
 /**
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  *
  */
-public class PostKill extends HTTPHandler {
-
-	private static final Log LOGGER = LogFactory.getLog(PostKill.class);
+public class GetQueryResult extends ResultFileHandler {
 
 	/**
-	 * {@inheritDoc}}
+	 * @param need_auth
+	 * @param path
+	 * @throws IOException 
 	 */
-	public PostKill(Authorizer authorizer, String url) {
-		super(authorizer, url);
+	public GetQueryResult(Authorizer authorizer, String url, String path)
+			throws IOException {
+		super(authorizer, url, path);
 	}
 
 	/**
-	 * @see com.happyelements.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 * @see com.github.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	@Override
 	protected void handle(HttpServletRequest request,
 			HttpServletResponse response) throws IOException, ServletException {
 		// check method
-		if (!"DELETE".equals(request.getMethod())) {
+		if (!"GET".equals(request.getMethod())) {
 			response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-					"do not supoort http method except for POST");
+					"do not supoort http method except for GET");
 			return;
 		}
 
 		// check auth
 		if (!auth(request)) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-			return;
-		}
-
-		String id = request.getParameter("id");
-		if (id == null || id.isEmpty()) {
-			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 
@@ -90,25 +82,31 @@ public class PostKill extends HTTPHandler {
 			return;
 		}
 
-		try {
-			QueryInfo info = HadoopClient.getQueryInfo(id);
-			if (info != null) {
-				RunningJob job = HadoopClient
-						.getJob(JobID.forName(info.job_id));
-				if (job != null && user.equals(info.user)) {
-					switch (job.getJobState()) {
-					case JobStatus.RUNNING:
-					case JobStatus.PREP:
-						job.killJob();
-						break;
-					}
-				}
-			}
-		} catch (Exception e) {
-			PostKill.LOGGER.error("killing query:" + id + " fail", e);
+		// check qeury id
+		String query_id = request.getParameter("id");
+		if (query_id == null || query_id.isEmpty()) {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+					"find no query");
+			return;
 		}
 
-		response.setStatus(HttpServletResponse.SC_OK);
+		File file = makeResultFile(user, query_id);
+		if (!file.exists()) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+
+		long modify = request.getDateHeader("If-Modified-Since");
+		if (modify != -1 && file.lastModified() / 1000 <= modify / 1000) {
+			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+		} else {
+			response.setStatus(HttpServletResponse.SC_OK);
+			response.setContentType("application/octet-stream");
+			response.addDateHeader("Last-Modified", file.lastModified());
+			IO.copy(new BufferedReader(new FileReader(file)),
+					response.getWriter());
+		}
+		return;
 	}
 
 }

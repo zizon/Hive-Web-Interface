@@ -24,44 +24,67 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web.api;
+package com.github.hive.web;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.happyelements.hive.web.HadoopClient;
-import com.happyelements.hive.web.HTTPServer.HTTPHandler;
-import com.happyelements.hive.web.HadoopClient.QueryInfo;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
+ * the central thread pool
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
- *
  */
-public class ListAllJobs extends HTTPHandler {
+public class Central {
+	private static final Log LOGGER = LogFactory.getLog(Central.class);
 
-	/**
-	 * @param url
-	 */
-	public ListAllJobs(String url) {
-		super(url);
+	private static final ExecutorService THREAD_POOL = new ThreadPoolExecutor(
+			0, Integer.MAX_VALUE, 10L, TimeUnit.SECONDS,
+			new SynchronousQueue<Runnable>(false));
+
+	private static final ScheduledExecutorService TIMER;
+	static {
+		TIMER = Executors.newScheduledThreadPool(1);
 	}
 
 	/**
-	 * @see com.happyelements.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 * get the thread pool
+	 * @return
+	 * 		the thread pool
 	 */
-	@Override
-	protected void handle(HttpServletRequest request,
-			HttpServletResponse response) throws IOException, ServletException {
-		String user = request.getParameter("user");
-		for (Entry<String, QueryInfo> entry : user == null ? HadoopClient
-				.getUserQuerys(user).entrySet() : HadoopClient.getAllQuerys()
-				.entrySet()) {
-			response.getWriter().println(entry.toString());
-		}
+	public static ExecutorService getThreadPool() {
+		return Central.THREAD_POOL;
+	}
+
+	/**
+	 * get the timer object
+	 * @return
+	 * 		the timer
+	 */
+	public static void schedule(final Runnable runnable, long second_rate) {
+		Central.TIMER.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					runnable.run();
+				} catch (Throwable e) {
+					Central.LOGGER.error("timer exception:", e);
+				}
+			}
+		}, 0, second_rate, TimeUnit.SECONDS);
+	}
+
+	/**
+	 * get the appropriate now
+	 * @return
+	 * 		the now time(not much precise)
+	 */
+	public static long now() {
+		return System.currentTimeMillis();
 	}
 }

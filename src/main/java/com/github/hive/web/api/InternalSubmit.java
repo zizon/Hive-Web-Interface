@@ -24,7 +24,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package com.happyelements.hive.web.api;
+package com.github.hive.web.api;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -45,9 +45,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.JobPriority;
 
-import com.happyelements.hive.web.HTTPServer.HTTPHandler;
-import com.happyelements.hive.web.HadoopClient;
-import com.happyelements.hive.web.Token;
+import com.github.hive.web.HadoopClient;
+import com.github.hive.web.Token;
+import com.github.hive.web.HTTPServer.HTTPHandler;
 
 /**
  * internal hander for hive job submission
@@ -66,7 +66,7 @@ public class InternalSubmit extends HTTPHandler {
 	}
 
 	/**
-	 * @see com.happyelements.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 * @see com.github.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	@Override
 	protected void handle(HttpServletRequest request,
