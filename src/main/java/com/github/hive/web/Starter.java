@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.RollingFileAppender;
 
+import com.github.hive.web.api.Download;
 import com.github.hive.web.api.GetQueryResult;
 import com.github.hive.web.api.GetUserQuerys;
 import com.github.hive.web.api.InternalSubmit;
@@ -124,6 +125,7 @@ public class Starter {
 					.add(new GetUserQuerys(authorizer, "/hwi/getUserQuerys.jsp"))
 					.add(new PostKill(authorizer, "/hwi/kill.jsp"))
 					.add(new ListAllJobs("/all"))
+					.add(new Download("/hwi/download", args[1]))
 					.add(new InternalSubmit("/internal/submit")).start();
 		} catch (Exception e) {
 			e.printStackTrace();
