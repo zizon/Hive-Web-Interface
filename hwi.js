@@ -145,18 +145,17 @@ var hwi = {
 
 				if(change == true){
 					if(row.status == "SUCCEEDED"){
-						$("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.fetch(\""+row.id+"\")' class='btn'>fetch</button>");
+						$("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.fetch(\""+row.id+"\")' class='btn'>show</button>");
 					}else{
 						$("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.kill(\""+row.id+"\")' class='btn'>kill</button>");
 					}
-
 				}
 				hwi.historys[row.id] = row;
 				continue;
 			}else{
 				hwi.historys[row.id]=row;
 				html += "<tr id='row-"+row.id+"'>";
-				html += "<td>" + row.id + "</td>";
+				html += "<td id='"+row.id+"-link-trigger'><a href='/hwi/download?user="+hwi.cookie("user")+"&id="+row.id+"' target='_blank'>" + row.id + "</a></td>";
 				html += "<td id='"+row.id+"-status'>" + row.status + "</td>";
 				html += "<td id='"+row.id+"-progress'>" + (row.map * 100 + row.reduce * 100) / 2 + "%</td>";
 				html += "<td>" + row.query + "</td>";
@@ -164,7 +163,7 @@ var hwi = {
 				if (row.status == "SUCCEEDED") {
 					html += "<button id='" + row.id
 						+ "' onclick='hwi.fetch(\"" + row.id
-						+ "\")' class='btn'>fetch</button>";
+						+ "\")' class='btn'>show</button>";
 				} else {
 					html += "<button id='" + row.id
 						+ "' onclick='hwi.kill(\"" + row.id
@@ -173,6 +172,18 @@ var hwi = {
 				html += "</td>";
 				html += "</tr>";
 				$("#jobs-body").append(html);
+				$("#"+row.id+"-link-trigger").hover(
+					function(){
+						if($("#"+row.id+"-status").text() == "SUCCEEDED"){
+							$("#download-tips").css("display","inline");
+						}
+					},
+					function(){
+						if($("#"+row.id+"-status").text() == "SUCCEEDED"){
+							$("#download-tips").css("display","none");
+						}
+					}
+				);
 				continue;
 			}
 		 }
