@@ -146,6 +146,19 @@ var hwi = {
 				if(change == true){
 					if(row.status == "SUCCEEDED"){
 						$("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.fetch(\""+row.id+"\")' class='btn'>show</button>");
+						$("#"+row.id+"-link-trigger").replaceWith("<td id='"+row.id+"-link-trigger'><a herf='/hwi/download?user="+hwi.cookie("user")+"&id="+row.id+"' target='_blank'>" + row.id + "</a></td>");
+						$("#"+row.id+"-link-trigger").hover(
+							function(){
+								if($("#"+row.id+"-status").text() == "SUCCEEDED"){
+									$("#download-tips").css("display","inline");
+								}
+							},
+							function(){
+								if($("#"+row.id+"-status").text() == "SUCCEEDED"){
+									$("#download-tips").css("display","none");
+								}
+							}
+						);
 					}else{
 						$("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.kill(\""+row.id+"\")' class='btn'>kill</button>");
 					}
@@ -155,7 +168,13 @@ var hwi = {
 			}else{
 				hwi.historys[row.id]=row;
 				html += "<tr id='row-"+row.id+"'>";
-				html += "<td id='"+row.id+"-link-trigger'><a href='/hwi/download?user="+hwi.cookie("user")+"&id="+row.id+"' target='_blank'>" + row.id + "</a></td>";
+
+				if (row.status == "SUCCEEDED"){
+					html += "<td id='"+row.id+"-link-trigger'><a href='/hwi/download?user="+hwi.cookie("user")+"&id="+row.id+"' target='_blank'>" + row.id + "</a></td>";
+				}else{
+					html += "<td id='"+row.id+"-link-trigger'>"+ row.id + "</a></td>";
+				}
+
 				html += "<td id='"+row.id+"-status'>" + row.status + "</td>";
 				html += "<td id='"+row.id+"-progress'>" + (row.map * 100 + row.reduce * 100) / 2 + "%</td>";
 				html += "<td>" + row.query + "</td>";
