@@ -7,7 +7,13 @@ var hwi = {
 		}
 	},
 	query : function() {
-		$("#run").addClass("disabled");
+		var run = $("#run")
+		if( run.attr("disabled")){
+			return;	
+		}else{
+			run.attr("disabled",true);
+		}
+
 		query_string = $("#query").val();
 		$.ajax({
 			type : "POST",
@@ -25,11 +31,11 @@ var hwi = {
 					"reduce":0,
 					"query":query_string
 				}]);
-				$("#run").removeClass("disabled");
+				$("#run").attr("disabled",false);
 			},
 			error : function(jqxhr, error_status,error_message) {
 				hwi.message("important",error_message);
-				$("#run").removeClass("disabled");
+				$("#run").attr("disabled",false);
 			},
 			headers : {"Authorization" : "Basic " + hwi.cookie("basic")},
 			dataType: "json"
@@ -51,6 +57,8 @@ var hwi = {
 			success : function() {
 				hwi.message("notice","kill done");
 				$("#" + id).attr("disabled", true);
+				$("#row-" + id).remove();
+				delete hwi.historys[""+id];
 			},
 			error : function() {
 				hwi.message("important","kill fail");
@@ -73,12 +81,12 @@ var hwi = {
 			},
 			success : function(data) {
 				hwi.debug(data);
-				$("#" + id).attr("disabled", false);
 				$("#result").show();
 				$("#result").replaceWith("<div id='result'><button class='pull-right' id='close'>x</button><pre>" + $.trim(data) + "</pre></div>");
 				$("#close").click(function(){
 					$('#result').hide();
 				});
+				$("#" + id).attr("disabled", false);
 			},
 			error : function() {
 				hwi.message("important","fetch fail");
@@ -126,7 +134,7 @@ var hwi = {
 		 	var html ="";
 			var change=false;
 			var row = data[index];
-			if(row.id == "null"){
+			if(row.id == "null" || row.status == 'KILLED'){
 				continue;
 			}
 			
@@ -168,7 +176,7 @@ var hwi = {
 			}else{
 				hwi.historys[row.id]=row;
 				html += "<tr id='row-"+row.id+"'>";
-
+				
 				if (row.status == "SUCCEEDED"){
 					html += "<td id='"+row.id+"-link-trigger'><a href='/hwi/download?user="+hwi.cookie("user")+"&id="+row.id+"' target='_blank'>" + row.id + "</a></td>";
 				}else{
