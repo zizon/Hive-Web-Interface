@@ -154,7 +154,7 @@ var hwi = {
 				if(change == true){
 					if(row.status == "SUCCEEDED"){
 						$("#"+row.id).replaceWith("<button id='"+row.id + "' onclick='hwi.fetch(\""+row.id+"\")' class='btn'>show</button>");
-						$("#"+row.id+"-link-trigger").replaceWith("<td id='"+row.id+"-link-trigger'><a herf='/hwi/download?user="+hwi.cookie("user")+"&id="+row.id+"' target='_blank'>" + row.id + "</a></td>");
+						$("#"+row.id+"-link-trigger").replaceWith("<td id='"+row.id+"-link-trigger'><a href='/hwi/download?user="+hwi.cookie("user")+"&id="+row.id+"' target='_blank'>" + row.id + "</a></td>");
 						$("#"+row.id+"-link-trigger").hover(
 							function(){
 								if($("#"+row.id+"-status").text() == "SUCCEEDED"){
