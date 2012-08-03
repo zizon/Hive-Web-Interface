@@ -61,6 +61,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * wrapper for some hadoop api
+ * 
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  */
 public class HadoopClient {
@@ -70,7 +71,8 @@ public class HadoopClient {
 	private static final long INVALIDATE_PERIOD = 3600000 * 4;
 
 	/**
-	 * query info,include job status and query/user 
+	 * query info,include job status and query/user
+	 * 
 	 * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
 	 */
 	public static class QueryInfo {
@@ -83,14 +85,15 @@ public class HadoopClient {
 
 		/**
 		 * constructor
+		 * 
 		 * @param user
-		 * 		the user name
+		 *            the user name
 		 * @param query_id
-		 * 		the query id
+		 *            the query id
 		 * @param query
-		 * 		the query string
+		 *            the query string
 		 * @param job_id
-		 * 		the job id
+		 *            the job id
 		 */
 		public QueryInfo(String user, String query_id, String query,
 				String job_id) {
@@ -102,7 +105,8 @@ public class HadoopClient {
 		}
 
 		/**
-		 * {@inheritDoc}}
+		 * {@inheritDoc}
+		 * 
 		 * @see java.lang.Object#toString()
 		 */
 		@Override
@@ -299,10 +303,10 @@ public class HadoopClient {
 
 	/**
 	 * find query info by either job id or query id
+	 * 
 	 * @param id
-	 * 		either job id or query id
-	 * @return
-	 * 		the query info
+	 *            either job id or query id
+	 * @return the query info
 	 */
 	public static QueryInfo getQueryInfo(String id) {
 		QueryInfo info;
@@ -324,12 +328,12 @@ public class HadoopClient {
 
 	/**
 	 * get running job status
+	 * 
 	 * @param id
-	 * 		the JobID of job
-	 * @return
-	 * 		the running job if exist
+	 *            the JobID of job
+	 * @return the running job if exist
 	 * @throws IOException
-	 * 		thrown when communicate to jobtracker fail
+	 *             thrown when communicate to jobtracker fail
 	 */
 	public static RunningJob getJob(JobID id) throws IOException {
 		return HadoopClient.CLIENT.getJob(id);
@@ -337,12 +341,12 @@ public class HadoopClient {
 
 	/**
 	 * get running job status
+	 * 
 	 * @param id
-	 * 		the JobID of job
-	 * @return
-	 * 		the running job if exist
+	 *            the JobID of job
+	 * @return the running job if exist
 	 * @throws IOException
-	 * 		thrown when communicate to jobtracker fail
+	 *             thrown when communicate to jobtracker fail
 	 */
 	public static Map<String, QueryInfo> getAllQuerys() throws IOException {
 		return HadoopClient.JOB_CACHE;
@@ -350,10 +354,10 @@ public class HadoopClient {
 
 	/**
 	 * get the user query
+	 * 
 	 * @param user
-	 * 		the user name
-	 * @return
-	 * 		the users name
+	 *            the user name
+	 * @return the users name
 	 */
 	public static Map<String, QueryInfo> getUserQuerys(String user) {
 		// trigger refresh
@@ -361,18 +365,18 @@ public class HadoopClient {
 	}
 
 	/**
-	/**
-	 * async submit a query
+	 * /** async submit a query
+	 * 
 	 * @param user
-	 * 		the submit user
+	 *            the submit user
 	 * @param query_id
-	 * 		the query id
+	 *            the query id
 	 * @param query
-	 * 		the query
+	 *            the query
 	 * @param conf
-	 * 		the hive conf
+	 *            the hive conf
 	 * @param priority
-	 * 		the priority
+	 *            the priority
 	 */
 	public static void asyncSubmitQuery(final String query,
 			final HiveConf conf, final File out_file, final JobPriority priority) {
@@ -387,6 +391,8 @@ public class HadoopClient {
 				SessionState.start(session);
 				Driver driver = new Driver();
 				driver.init();
+
+				Throwable exception = null;
 				try {
 					if (driver.run(query).getResponseCode() == 0
 							&& out_file != null) {
@@ -434,6 +440,7 @@ public class HadoopClient {
 							HadoopClient.LOGGER
 									.error("unexpected exception when writing result to files",
 											e);
+							exception = e;
 						} finally {
 							try {
 								if (file != null) {
@@ -493,12 +500,25 @@ public class HadoopClient {
 							} catch (IOException e) {
 								HadoopClient.LOGGER.error("fail to close file:"
 										+ file, e);
+								exception = e;
 							}
 						}
 					}
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					HadoopClient.LOGGER.error("fail to submit querys", e);
+					exception = e;
 				} finally {
+					if (exception != null) {
+						ConcurrentHashMap<String, QueryInfo> user_querys = USER_JOB_CACHE
+								.get(conf.get("he.user.name"));
+						if (user_querys != null) {
+							QueryInfo info = user_querys.get(conf
+									.get("rest.query.id"));
+							if (info != null) {
+								info.status.setRunState(JobStatus.FAILED);
+							}
+						}
+					}
 					driver.close();
 				}
 			}
@@ -507,14 +527,15 @@ public class HadoopClient {
 
 	/**
 	 * async submit a query
+	 * 
 	 * @param user
-	 * 		the submit user
+	 *            the submit user
 	 * @param query_id
-	 * 		the query id
+	 *            the query id
 	 * @param query
-	 * 		the query
+	 *            the query
 	 * @param conf
-	 * 		the hive conf
+	 *            the hive conf
 	 */
 	public static void asyncSubmitQuery(final String query,
 			final HiveConf conf, final File out_file) {
