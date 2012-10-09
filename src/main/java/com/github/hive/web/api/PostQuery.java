@@ -113,7 +113,7 @@ public class PostQuery extends ResultFileHandler {
 
 		// submit querys
 		String query_id = MD5.digestLiteral(user + query
-				+ System.currentTimeMillis());
+				+ System.nanoTime());
 
 		// set up hive
 		final HiveConf conf = new HiveConf(HiveConf.class);

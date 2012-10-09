@@ -384,7 +384,7 @@ public class HadoopClient {
 			@Override
 			public void run() {
 				conf.setEnum("mapred.job.priority", priority != null ? priority
-						: JobPriority.NORMAL);
+						: JobPriority.VERY_LOW);
 				SessionState session = new SessionState(conf);
 				session.setIsSilent(true);
 				session.setIsVerbose(true);
