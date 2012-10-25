@@ -145,19 +145,6 @@ public class HadoopClient {
 				HadoopClient.LOGGER.info("triger refresh " + Central.now());
 				try {
 					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
-						if (status.getJobPriority() == JobPriority.HIGH) {
-							HadoopClient.LOGGER.info("fetch a job:"
-									+ status.getJobID()
-									+ " start_time:"
-									+ status.getStartTime()
-									+ " now:"
-									+ Central.now()
-									+ " diff:"
-									+ (Central.now() - status.getStartTime() >= HadoopClient.INVALIDATE_PERIOD));
-						} else {
-							continue;
-						}
-
 						// ignore old guys
 						long start_time = status.getStartTime();
 						if (start_time > 0
