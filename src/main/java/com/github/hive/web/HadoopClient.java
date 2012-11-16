@@ -144,7 +144,9 @@ public class HadoopClient {
 
 				HadoopClient.LOGGER.info("triger refresh " + Central.now());
 				try {
-					for (JobStatus status : HadoopClient.CLIENT.getAllJobs()) {
+					JobStatus[] jobs = HadoopClient.CLIENT.getAllJobs();
+					LOGGER.info("got jobs:" + jobs.length);
+					for (JobStatus status : jobs) {
 						// ignore old guys
 						long start_time = status.getStartTime();
 						if (start_time > 0
