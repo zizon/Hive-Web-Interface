@@ -162,12 +162,13 @@ public class HadoopClient {
 							String local = JobTracker
 									.getLocalJobFilePath(status.getJobID());
 							JobConf conf = new JobConf(local);
-							
-							LOGGER.info("local path :" + local);
-							
+
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
 							String user = conf.get("he.user.name");
+
+							LOGGER.info(local + " query:" + query + " id:" + query_id
+									+ " user:" + user);
 
 							// rude fix
 							// there is a gap when jobtracker report that a job
