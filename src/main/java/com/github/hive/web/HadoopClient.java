@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
@@ -145,7 +146,6 @@ public class HadoopClient {
 				HadoopClient.LOGGER.info("triger refresh " + Central.now());
 				try {
 					JobStatus[] jobs = HadoopClient.CLIENT.getAllJobs();
-					LOGGER.info("got jobs:" + jobs.length);
 					for (JobStatus status : jobs) {
 						// ignore old guys
 						long start_time = status.getStartTime();
@@ -158,10 +158,13 @@ public class HadoopClient {
 						String job_id = status.getJobID().toString();
 						// update info
 						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
-						LOGGER.info("query info:" + job_id);
 						if (info == null) {
-							JobConf conf = new JobConf(JobTracker
-									.getLocalJobFilePath(status.getJobID()));
+							String local = JobTracker
+									.getLocalJobFilePath(status.getJobID());
+							JobConf conf = new JobConf(local);
+							
+							LOGGER.info("local path :" + local);
+							
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
 							String user = conf.get("he.user.name");
