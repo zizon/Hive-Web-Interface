@@ -101,9 +101,9 @@ public class Starter {
 	public static void main(String[] args) {
 		try {
 			// check parameter
-			if (args.length != 4) {
+			if (args.length != 5) {
 				System.out
-						.println("Usage ${hadoop} jar ${jar} ${static_root} ${log_root} ${port} ${default_url}");
+						.println("Usage ${hadoop} jar ${jar} ${static_root} ${log_root} ${port} ${default_url} {hadoop.log.dir}");
 				return;
 			}
 
@@ -112,7 +112,9 @@ public class Starter {
 			Starter.LOGGER.info("initialize log system done");
 			Starter.LOGGER.info("starting http server at port:" + args[2]
 					+ " logdir:" + args[1] + " staticfiles:" + args[0]
-					+ " defualturl:" + args[3]);
+					+ " defualturl:" + args[3] + " logdir:" + args[4]);
+			
+			System.setProperty("hadoop.log.dir", args[4]);
 
 			// construct and start server
 			Authorizer authorizer = new WhiteListAuthorizer(new File(args[1],
