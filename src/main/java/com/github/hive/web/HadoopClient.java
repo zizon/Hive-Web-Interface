@@ -158,6 +158,7 @@ public class HadoopClient {
 						String job_id = status.getJobID().toString();
 						// update info
 						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
+						LOGGER.info("query info:" + job_id);
 						if (info == null) {
 							JobConf conf = new JobConf(JobTracker
 									.getLocalJobFilePath(status.getJobID()));
