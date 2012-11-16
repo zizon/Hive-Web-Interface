@@ -37,7 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
@@ -159,10 +158,8 @@ public class HadoopClient {
 						// update info
 						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
 						if (info == null) {
-							JobConf conf = new JobConf(
-									"/var/log/hadoop/mapred/"
-											+ status.getJobID().toString()
-											+ "_conf.xml");
+							JobConf conf = new JobConf(JobTracker
+									.getLocalJobFilePath(status.getJobID()));
 
 							String query = conf.get("hive.query.string");
 							String query_id = conf.get("rest.query.id");
