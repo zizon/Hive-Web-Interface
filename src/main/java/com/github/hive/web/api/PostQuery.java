@@ -28,6 +28,9 @@ package com.github.hive.web.api;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -55,6 +58,18 @@ public class PostQuery extends ResultFileHandler {
 
 	private static final Log LOGGER = LogFactory.getLog(PostQuery.class);
 
+	private ConcurrentMap<String, String> querys = new ConcurrentHashMap<String, String>(){
+		private static final long serialVersionUID = 1506831529920830173L;
+		{
+			Central.schedule(new Runnable() {
+				@Override
+				public void run() {
+					clear();
+				}
+			}, 60*30);
+		}
+	};
+
 	/**
 	 * @param path
 	 */
@@ -64,7 +79,8 @@ public class PostQuery extends ResultFileHandler {
 	}
 
 	/**
-	 * @see com.github.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 * @see com.github.hive.web.HTTPServer.HTTPHandler#handle(javax.servlet.http.HttpServletRequest,
+	 *      javax.servlet.http.HttpServletResponse)
 	 */
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response)
@@ -111,58 +127,62 @@ public class PostQuery extends ResultFileHandler {
 			return;
 		}
 
-		// submit querys
-		String query_id = MD5.digestLiteral(user + query
-				+ System.nanoTime());
+		String query_id = MD5.digestLiteral(user + query + System.nanoTime());
+		String old_id = null;
+		if ((old_id = querys.putIfAbsent("" + user + query, query_id)) != null) {
+			query_id = old_id;
+		}else {
+			// submit querys
 
-		// set up hive
-		final HiveConf conf = new HiveConf(HiveConf.class);
-		conf.set("hadoop.job.ugi", user + ",hive");
-		conf.set("he.user.name", user);
-		conf.set("rest.query.id", query_id);
-		conf.set("he.query.string", query);
-		try {
-			Boolean parsed = Central.getThreadPool()
-					.submit(new Callable<Boolean>() {
-						@Override
-						public Boolean call() throws Exception {
-							SessionState.start(new SessionState(conf));
-							try {
-								ASTNode tree = ParseUtils
-										.findRootNonNullToken(new ParseDriver()
-												.parse(query));
-								BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory
-										.get(conf, tree);
-								analyzer.analyze(tree, new Context(conf));
-								analyzer.validate();
-							} catch (Exception e) {
-								PostQuery.LOGGER
-										.error("fail to parse query", e);
-								return false;
+			// set up hive
+			final HiveConf conf = new HiveConf(HiveConf.class);
+			conf.set("hadoop.job.ugi", user + ",hive");
+			conf.set("he.user.name", user);
+			conf.set("rest.query.id", query_id);
+			conf.set("he.query.string", query);
+			try {
+				Boolean parsed = Central.getThreadPool()
+						.submit(new Callable<Boolean>() {
+							@Override
+							public Boolean call() throws Exception {
+								SessionState.start(new SessionState(conf));
+								try {
+									ASTNode tree = ParseUtils
+											.findRootNonNullToken(new ParseDriver()
+													.parse(query));
+									BaseSemanticAnalyzer analyzer = SemanticAnalyzerFactory
+											.get(conf, tree);
+									analyzer.analyze(tree, new Context(conf));
+									analyzer.validate();
+								} catch (Exception e) {
+									PostQuery.LOGGER.error(
+											"fail to parse query", e);
+									return false;
+								}
+								return true;
 							}
-							return true;
-						}
-					}).get();
-			if (parsed == null || !parsed) {
+						}).get();
+				if (parsed == null || !parsed) {
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+							"parse query fail");
+					return;
+				}
+			} catch (Exception e) {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-						"parse query fail");
+						"submit query fail");
+				PostQuery.LOGGER.error("fail to parse query", e);
 				return;
 			}
-		} catch (Exception e) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-					"submit query fail");
-			PostQuery.LOGGER.error("fail to parse query", e);
-			return;
+
+			// log query submit
+			PostQuery.LOGGER.info("user:" + user + " submit:" + query_id
+					+ " query:" + query);
+
+			// async submit
+			HadoopClient.asyncSubmitQuery(query, conf,
+					this.makeResultFile(user, query_id));
 		}
-
-		// log query submit
-		PostQuery.LOGGER.info("user:" + user + " submit:" + query_id
-				+ " query:" + query);
-
-		// async submit
-		HadoopClient.asyncSubmitQuery(query, conf,
-				this.makeResultFile(user, query_id));
-
+		
 		// send response
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.setContentType("application/json");
