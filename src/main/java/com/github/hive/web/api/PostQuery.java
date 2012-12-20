@@ -120,7 +120,8 @@ public class PostQuery extends ResultFileHandler {
 			return;
 		}
 
-		if (query == null || query.isEmpty()
+		if (query == null || query.isEmpty() 
+				|| !query.trim().toLowerCase().startsWith("select")
 				|| query.toLowerCase().contains("drop ")) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 					"no query string found");
