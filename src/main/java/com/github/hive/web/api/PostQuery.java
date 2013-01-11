@@ -135,7 +135,7 @@ public class PostQuery extends ResultFileHandler {
 			query_id = old_id;
 		}else {
 			// submit querys
-			querys.put(key, query);
+			querys.put(key, query_id);
 			
 			// set up hive
 			final HiveConf conf = new HiveConf(HiveConf.class);
