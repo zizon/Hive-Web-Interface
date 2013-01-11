@@ -119,7 +119,7 @@ public class PostQuery extends ResultFileHandler {
 					"no query string found");
 			return;
 		}
-
+		
 		if (query == null || query.isEmpty() 
 				|| !query.trim().toLowerCase().startsWith("select")
 				|| query.toLowerCase().contains("drop ")) {
@@ -130,11 +130,13 @@ public class PostQuery extends ResultFileHandler {
 
 		String query_id = MD5.digestLiteral(user + query + System.nanoTime());
 		String old_id = null;
-		if ((old_id = querys.putIfAbsent("" + user + query, query_id)) != null) {
+		String key = "" + user + query;
+		if (request.getParameter("force") == null && (old_id = querys.putIfAbsent(key, query_id)) != null) {
 			query_id = old_id;
 		}else {
 			// submit querys
-
+			querys.put(key, query);
+			
 			// set up hive
 			final HiveConf conf = new HiveConf(HiveConf.class);
 			conf.set("hadoop.job.ugi", user + ",hive");
