@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
@@ -44,6 +46,8 @@ import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
@@ -119,9 +123,12 @@ public class HadoopClient {
 	private static final JobClient CLIENT;
 	private static final ConcurrentHashMap<String, ConcurrentHashMap<String, QueryInfo>> USER_JOB_CACHE;
 	private static final ConcurrentHashMap<String, QueryInfo> JOB_CACHE;
+	private static final Hive HIVE;
 	static {
 		try {
-			CLIENT = new JobClient(new JobConf(new HiveConf()));
+			HiveConf conf = new HiveConf();
+			CLIENT = new JobClient(new JobConf(conf));
+			HIVE = Hive.get(conf);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -129,6 +136,24 @@ public class HadoopClient {
 		// create user job cache
 		JOB_CACHE = new ConcurrentHashMap<String, HadoopClient.QueryInfo>();
 		USER_JOB_CACHE = new ConcurrentHashMap<String, ConcurrentHashMap<String, QueryInfo>>();
+
+		Central.schedule(new Runnable() {
+
+			@Override
+			public void run() {
+				Set<String> tables = new TreeSet<>();
+				try {
+					for (String table : HIVE.getAllTables()) {
+						tables.add(table);
+					}
+				} catch (HiveException e) {
+					LOGGER.error("fail to fetch tables", e);
+				}
+
+				// udpate
+				TABLES = tables;
+			}
+		}, 60);
 
 		// schedule user cache update
 		Central.schedule(new Runnable() {
@@ -289,6 +314,8 @@ public class HadoopClient {
 			}
 		}, 60);
 	}
+
+	private static Set<String> TABLES = new TreeSet<>();
 
 	/**
 	 * find query info by either job id or query id
@@ -529,5 +556,14 @@ public class HadoopClient {
 	public static void asyncSubmitQuery(final String query,
 			final HiveConf conf, final File out_file) {
 		HadoopClient.asyncSubmitQuery(query, conf, out_file, JobPriority.HIGH);
+	}
+
+	/**
+	 * return hive tables
+	 * 
+	 * @return hive tables
+	 */
+	public static Set<String> hiveTables() {
+		return TABLES;
 	}
 }
