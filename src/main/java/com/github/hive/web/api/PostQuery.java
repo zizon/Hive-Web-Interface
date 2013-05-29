@@ -145,8 +145,6 @@ public class PostQuery extends ResultFileHandler {
 				&& (old_id = querys.putIfAbsent(key, query_id)) != null) {
 			query_id = old_id;
 		} else {
-			// submit querys
-			querys.put(key, query_id);
 
 			// set up hive
 			final HiveConf conf = new HiveConf(HiveConf.class);
@@ -171,6 +169,9 @@ public class PostQuery extends ResultFileHandler {
 			// log query submit
 			PostQuery.LOGGER.info("user:" + user + " submit:" + query_id
 					+ " query:" + query);
+
+			// submit querys
+			querys.put(key, query_id);
 
 			// async submit
 			HadoopClient.asyncSubmitQuery(query, conf,
