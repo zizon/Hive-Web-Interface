@@ -150,12 +150,11 @@ public class HadoopClient {
 					for (JobStatus status : jobs) {
 						// ignore old guys
 						long start_time = status.getStartTime();
-						if (status.getJobID().toString()
-								.equals("job_201305241916_17734")) {
-							System.out.println(status);
-						}
 						if (start_time > 0
 								&& Central.now() - start_time >= HadoopClient.INVALIDATE_PERIOD) {
+							LOGGER.info("drop status:" + status
+									+ " start_time:" + start_time + " current:"
+									+ Central.now());
 							continue;
 						}
 
