@@ -95,6 +95,7 @@ public class QueryFencer {
 		if (table == null) {
 			return "no table found";
 		} else if (!allow_tables.contains(table)) {
+			LOGGER.warn("table:" + table + " not allowed"); 
 			return "table not allowed";
 		} else if (columns == null) {
 			return "deny as it may require scaning too much data";
