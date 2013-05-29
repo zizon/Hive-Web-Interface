@@ -143,9 +143,10 @@ public class HadoopClient {
 					this.refreshing = true;
 				}
 
-				HadoopClient.LOGGER.info("triger refresh " + Central.now());
 				try {
 					JobStatus[] jobs = HadoopClient.CLIENT.getAllJobs();
+					HadoopClient.LOGGER.info("triger refresh " + Central.now()
+							+ " total jobs:" + jobs.length);
 					for (JobStatus status : jobs) {
 						// ignore old guys
 						long start_time = status.getStartTime();
@@ -373,8 +374,6 @@ public class HadoopClient {
 		Central.getThreadPool().submit(new Runnable() {
 			@Override
 			public void run() {
-				conf.setEnum("mapred.job.priority", priority != null ? priority
-						: JobPriority.VERY_LOW);
 				SessionState session = new SessionState(conf);
 				session.setIsSilent(true);
 				session.setIsVerbose(true);
@@ -529,6 +528,7 @@ public class HadoopClient {
 	 */
 	public static void asyncSubmitQuery(final String query,
 			final HiveConf conf, final File out_file) {
-		HadoopClient.asyncSubmitQuery(query, conf, out_file, JobPriority.HIGH);
+		HadoopClient.asyncSubmitQuery(query, conf, out_file,
+				JobPriority.VERY_LOW);
 	}
 }
