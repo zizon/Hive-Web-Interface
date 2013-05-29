@@ -4,7 +4,7 @@
 
 	<groupId>com.happyelements</groupId>
 	<artifactId>hive.web</artifactId>
-	<version>1.8.1.8</version>
+	<version>1.8.1.10</version>
 	<packaging>jar</packaging>
 
 	<name>hive.web</name>

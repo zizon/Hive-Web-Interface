@@ -155,12 +155,9 @@ public class HadoopClient {
 							continue;
 						}
 
-						LOGGER.info("status:" + status.getJobID()
-								+ " start_time:" + start_time + " current:"
-								+ Central.now());
-
 						// save job id
 						String job_id = status.getJobID().toString();
+
 						// update info
 						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
 						if (info == null) {
