@@ -31,6 +31,8 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -115,7 +117,7 @@ public class Starter {
 			Starter.LOGGER.info("initialize log system done");
 			Starter.LOGGER.info("starting http server at port:" + args[2]
 					+ " logdir:" + args[1] + " staticfiles:" + args[0]
-					+ " defualturl:" + args[3] + " logdir:" + args[4]);
+					+ " defualturl:" + args[3] + " hive-site:" + args[4]);
 
 			System.setProperty("hadoop.log.dir", args[4]);
 
@@ -123,7 +125,8 @@ public class Starter {
 			Authorizer authorizer = new WhiteListAuthorizer(new File(args[1],
 					"white_list.prop"));
 			QueryFencer fencer = new QueryFencer(
-					new File(args[1], "table.prop"));
+					new File(args[1], "table.prop"), new File(args[1],
+							"hive-site.xml"));
 			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3])
 					.add(new PostQuery(fencer, authorizer,
 							"/hwi/submitQuery.jsp", args[1]))

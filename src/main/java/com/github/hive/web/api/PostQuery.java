@@ -147,7 +147,7 @@ public class PostQuery extends ResultFileHandler {
 		} else {
 
 			// set up hive
-			final HiveConf conf = new HiveConf(HiveConf.class);
+			final HiveConf conf = fencer.createHiveConf();
 			conf.set("hadoop.job.ugi", user + ",hive");
 			conf.set("he.user.name", user);
 			conf.set("rest.query.id", query_id);

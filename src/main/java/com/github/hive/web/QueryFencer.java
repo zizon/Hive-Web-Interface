@@ -29,6 +29,8 @@ package com.github.hive.web;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
@@ -40,6 +42,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -58,11 +61,13 @@ public class QueryFencer {
 	protected ConcurrentMap<String, Set<String>> table_partitions = new ConcurrentHashMap<>();
 
 	protected Set<String> allow_tables = new TreeSet<>();
+	protected URL url = null;
 
-	public QueryFencer(File file) {
+	public QueryFencer(File file, File hive) throws MalformedURLException {
 		Runnable reload = makeReloadRunnable(file);
 		reload.run();
 		Central.schedule(reload, 60);
+		url = hive.toURI().toURL();
 	}
 
 	public String isSimpleQuery(ASTNode tree) {
@@ -102,6 +107,16 @@ public class QueryFencer {
 		}
 
 		return constrainStatisfy(table, columns);
+	}
+
+	public HiveConf createHiveConf() {
+		HiveConf conf = new HiveConf();
+		conf.addResource(url);
+
+		// modify compress
+		conf.setBoolean("mapred.output.compress", false);
+		
+		return conf;
 	}
 
 	protected QueryFencer() {
@@ -249,20 +264,25 @@ public class QueryFencer {
 					.parse(real_query));
 			System.out.println(tree.dump());
 			System.out.println(new QueryFencer().isSimpleQuery(tree));
+			System.out.println(tree.dump());
 			/*
-			 * System.out.println(tree.dump()); Set<Table> tables = new
-			 * TreeSet<>(new Comparator<Table>() {
-			 * 
-			 * @Override public int compare(Table o1, Table o2) { if
-			 * (o1.getDbName() != o2.getDbName()) { return
-			 * o1.getDbName().compareTo(o2.getDbName()); } else { return
-			 * o1.getTableName().compareTo(o2.getTableName()); } } });
-			 * findTableAccess(tree, tables);
-			 * 
-			 * System.out.println(tables);
-			 * System.out.println("-------------------");
-			 * findTableCondition(tree, tables);
-			 */
+			Set<Table> tables = new TreeSet<>(new Comparator<Table>() {
+
+				@Override
+				public int compare(Table o1, Table o2) {
+					if (o1.getDbName() != o2.getDbName()) {
+						return o1.getDbName().compareTo(o2.getDbName());
+					} else {
+						return o1.getTableName().compareTo(o2.getTableName());
+					}
+				}
+			});
+			findTableAccess(tree, tables);
+
+			System.out.println(tables);
+			System.out.println("-------------------");
+			findTableCondition(tree, tables);
+			*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
