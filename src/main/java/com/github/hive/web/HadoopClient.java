@@ -152,7 +152,7 @@ public class HadoopClient {
 						long start_time = status.getStartTime();
 						if (start_time > 0
 								&& Central.now() - start_time >= HadoopClient.INVALIDATE_PERIOD) {
-							LOGGER.info("drop status:" + status
+							LOGGER.info("drop status:" + status.getJobID()
 									+ " start_time:" + start_time + " current:"
 									+ Central.now());
 							continue;
