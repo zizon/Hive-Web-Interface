@@ -49,6 +49,7 @@ import com.github.hive.web.authorizer.WhiteListAuthorizer;
 
 /**
  * to start a http server
+ * 
  * @author <a href="mailto:zhizhong.qiu@happyelements.com">kevin</a>
  */
 public class Starter {
@@ -57,10 +58,11 @@ public class Starter {
 
 	/**
 	 * check path
+	 * 
 	 * @param path
-	 * 		the path to check
+	 *            the path to check
 	 * @throws IOException
-	 * 		throw when path is not exist or is not directory
+	 *             throw when path is not exist or is not directory
 	 */
 	public static void checkAndCreate(String path) throws IOException {
 		File file = new File(path);
@@ -75,10 +77,11 @@ public class Starter {
 
 	/**
 	 * initialize log
+	 * 
 	 * @param log
-	 * 		the log path
+	 *            the log path
 	 * @throws IOException
-	 * 		throw when fail to create logs
+	 *             throw when fail to create logs
 	 */
 	public static void initializeLogSystem(String log) throws IOException {
 		Starter.checkAndCreate(log);
@@ -113,15 +116,17 @@ public class Starter {
 			Starter.LOGGER.info("starting http server at port:" + args[2]
 					+ " logdir:" + args[1] + " staticfiles:" + args[0]
 					+ " defualturl:" + args[3] + " logdir:" + args[4]);
-			
+
 			System.setProperty("hadoop.log.dir", args[4]);
 
 			// construct and start server
 			Authorizer authorizer = new WhiteListAuthorizer(new File(args[1],
 					"white_list.prop"));
+			QueryFencer fencer = new QueryFencer(
+					new File(args[1], "table.prop"));
 			new HTTPServer(args[0], Integer.parseInt(args[2], 10), args[3])
-					.add(new PostQuery(authorizer, "/hwi/submitQuery.jsp",
-							args[1]))
+					.add(new PostQuery(fencer, authorizer,
+							"/hwi/submitQuery.jsp", args[1]))
 					.add(new GetQueryResult(authorizer,
 							"/hwi/getQueryResult.jsp", args[1]))
 					.add(new GetUserQuerys(authorizer, "/hwi/getUserQuerys.jsp"))
