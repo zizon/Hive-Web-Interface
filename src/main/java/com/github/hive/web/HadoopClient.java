@@ -146,12 +146,14 @@ public class HadoopClient {
 				try {
 					JobStatus[] jobs = HadoopClient.CLIENT.getAllJobs();
 					HadoopClient.LOGGER.info("triger refresh " + Central.now()
-							+ " total jobs:" + jobs.length + " job_cache:"
-							+ JOB_CACHE.size() + " user_job_cache:"
-							+ USER_JOB_CACHE.size());
+							+ " total jobs:" + jobs.length);
 					for (JobStatus status : jobs) {
 						// ignore old guys
 						long start_time = status.getStartTime();
+						if (status.getJobID().toString()
+								.equals("job_201305241916_17734")) {
+							System.out.println(status);
+						}
 						if (start_time > 0
 								&& Central.now() - start_time >= HadoopClient.INVALIDATE_PERIOD) {
 							continue;
