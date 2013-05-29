@@ -95,7 +95,7 @@ public class QueryFencer {
 		if (table == null) {
 			return "no table found";
 		} else if (!allow_tables.contains(table)) {
-			LOGGER.warn("table:" + table + " not allowed"); 
+			LOGGER.warn("table:" + table + " not allowed");
 			return "table not allowed";
 		} else if (columns == null) {
 			return "deny as it may require scaning too much data";
@@ -170,8 +170,18 @@ public class QueryFencer {
 			return null;
 		}
 
+		StringBuilder builder = new StringBuilder();
+		for (Node node : ast.getChildren()) {
+			builder.append(((ASTNode) node).getText()).append('.');
+		}
+
+		// trim tail
+		if (builder.charAt(builder.length() - 1) == '.') {
+			builder.setLength(builder.length() - 1);
+		}
+
 		// check table name
-		return ((ASTNode) ast.getChild(0)).getText();
+		return builder.toString();
 	}
 
 	protected Set<String> findColumns(ASTNode tree, Set<String> columns) {
