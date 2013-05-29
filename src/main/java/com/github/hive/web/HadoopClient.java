@@ -158,6 +158,18 @@ public class HadoopClient {
 						// save job id
 						String job_id = status.getJobID().toString();
 
+						if (job_id.equals("job_201305241916_17664")) {
+							LOGGER.info("status:"
+									+ status.getJobID()
+									+ " start_time:"
+									+ start_time
+									+ " current:"
+									+ Central.now()
+									+ " path:"
+									+ JobTracker.getLocalJobFilePath(status
+											.getJobID()));
+						}
+
 						// update info
 						QueryInfo info = HadoopClient.JOB_CACHE.get(job_id);
 						if (info == null) {
