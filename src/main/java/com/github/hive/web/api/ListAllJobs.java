@@ -57,7 +57,7 @@ public class ListAllJobs extends HTTPHandler {
 	protected void handle(HttpServletRequest request,
 			HttpServletResponse response) throws IOException, ServletException {
 		String user = request.getParameter("user");
-		for (Entry<String, QueryInfo> entry : user == null ? HadoopClient
+		for (Entry<String, QueryInfo> entry : user != null ? HadoopClient
 				.getUserQuerys(user).entrySet() : HadoopClient.getAllQuerys()
 				.entrySet()) {
 			response.getWriter().println(entry.toString());

@@ -27,6 +27,7 @@
 package com.github.hive.web.api;
 
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import com.github.hive.web.Central;
 import com.github.hive.web.HadoopClient;
@@ -173,9 +175,22 @@ public class PostQuery extends ResultFileHandler {
 			// submit querys
 			querys.put(key, query_id);
 
+			final String context_query_id = query;
+			final String context_uqer = user;
+
 			// async submit
-			HadoopClient.asyncSubmitQuery(query, conf,
-					this.makeResultFile(user, query_id));
+			UserGroupInformation.createRemoteUser(user).doAs(
+					new PrivilegedAction<Void>() {
+						@Override
+						public Void run() {
+							HadoopClient.asyncSubmitQuery(
+									query,
+									conf,
+									makeResultFile(context_uqer,
+											context_query_id));
+							return null;
+						}
+					});
 		}
 
 		// send response
