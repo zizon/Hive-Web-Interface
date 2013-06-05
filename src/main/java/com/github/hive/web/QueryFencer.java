@@ -115,7 +115,7 @@ public class QueryFencer {
 
 		// modify compress
 		conf.setBoolean("mapred.output.compress", false);
-		
+
 		return conf;
 	}
 
@@ -225,8 +225,8 @@ public class QueryFencer {
 
 		try {
 			partitions = new TreeSet<>();
-			for (FieldSchema schema : Hive.get().getTable(table)
-					.getPartitionKeys()) {
+			for (FieldSchema schema : Hive.get(createHiveConf())
+					.getTable(table).getPartitionKeys()) {
 				partitions.add(schema.getName());
 			}
 
