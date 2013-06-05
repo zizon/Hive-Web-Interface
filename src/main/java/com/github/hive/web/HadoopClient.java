@@ -388,8 +388,18 @@ public class HadoopClient {
 							&& out_file != null) {
 						FileOutputStream file = null;
 						try {
+							file = new FileOutputStream(out_file);
+
+							driver.setMaxRows(Integer.MAX_VALUE);
 							ArrayList<String> result = new ArrayList<String>();
-							driver.getResults(result);
+							while (driver.getResults(result)) {
+								for (String string : result) {
+									file.write(new Text(string + "\n")
+											.getBytes());
+								}
+							}
+
+							/*
 							JobConf job = new JobConf(conf, ExecDriver.class);
 							FetchOperator operator = new FetchOperator(driver
 									.getPlan().getFetchTask().getWork(), job);
@@ -418,7 +428,6 @@ public class HadoopClient {
 												.getSerializationNullFormat());
 							}
 							serde.initialize(job, serdeProp);
-							file = new FileOutputStream(out_file);
 							InspectableObject io = operator.getNextRow();
 							while (io != null) {
 								file.write((((Text) serde
@@ -426,6 +435,8 @@ public class HadoopClient {
 										.getBytes());
 								io = operator.getNextRow();
 							}
+							
+							*/
 						} catch (Exception e) {
 							HadoopClient.LOGGER
 									.error("unexpected exception when writing result to files",
