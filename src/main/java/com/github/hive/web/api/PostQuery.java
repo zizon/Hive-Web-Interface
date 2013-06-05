@@ -175,7 +175,7 @@ public class PostQuery extends ResultFileHandler {
 			// submit querys
 			querys.put(key, query_id);
 
-			final String context_query_id = query;
+			final String context_query_id = query_id;
 			final String context_uqer = user;
 
 			// async submit
