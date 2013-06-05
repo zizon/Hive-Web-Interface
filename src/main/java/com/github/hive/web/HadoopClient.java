@@ -29,26 +29,17 @@ package com.github.hive.web;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ArrayList;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
-import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -57,7 +48,6 @@ import org.apache.hadoop.mapred.JobPriority;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.JobTracker;
 import org.apache.hadoop.mapred.RunningJob;
-import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * wrapper for some hadoop api
@@ -510,7 +500,7 @@ public class HadoopClient {
 					exception = e;
 				} finally {
 					if (exception != null) {
-						ConcurrentHashMap<String, QueryInfo> user_querys = USER_JOB_CACHE
+						ConcurrentHashMap<String, QueryInfo> user_querys = HadoopClient.USER_JOB_CACHE
 								.get(conf.get("he.user.name"));
 						if (user_querys != null) {
 							QueryInfo info = user_querys.get(conf
